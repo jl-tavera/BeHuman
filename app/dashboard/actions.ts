@@ -415,3 +415,95 @@ function processDistribution(
 
   return result;
 }
+
+// ============================================================================
+// WELLNESS RECOMMENDATION INTEGRATION
+// ============================================================================
+
+export interface WellnessRecommendation {
+  id: string;
+  anonymous_token: string;
+  situation_type: string;
+  situation_subtype?: string;
+  situation_context?: string;
+  situation_confidence: number;
+  profile_snapshot: any;
+  transcript_excerpt?: string;
+  recommended_product_id: string;
+  recommended_product_name: string;
+  recommended_product_price: number;
+  recommended_product_category?: string;
+  recommended_product_subcategory?: string;
+  product_snapshot: any;
+  recommendation_score: number;
+  recommendation_reasons: string[];
+  empathic_message?: string;
+  estimated_productivity_uplift_percent: number;
+  status: string;
+  created_at: string;
+}
+
+/**
+ * Fetch pending wellness recommendations from the database
+ */
+export async function getWellnessRecommendations(): Promise<WellnessRecommendation[]> {
+  const supabase = await getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("wellness_requests")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching wellness recommendations:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
+ * Approve a wellness recommendation
+ */
+export async function approveWellnessRecommendation(requestId: string): Promise<boolean> {
+  const supabase = await getSupabaseServerClient();
+
+  const { error } = await supabase
+    .from("wellness_requests")
+    .update({ 
+      status: "approved",
+      reviewed_at: new Date().toISOString()
+    })
+    .eq("id", requestId);
+
+  if (error) {
+    console.error("Error approving wellness recommendation:", error);
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Reject a wellness recommendation
+ */
+export async function rejectWellnessRecommendation(requestId: string, reason?: string): Promise<boolean> {
+  const supabase = await getSupabaseServerClient();
+
+  const { error } = await supabase
+    .from("wellness_requests")
+    .update({ 
+      status: "rejected",
+      reviewed_at: new Date().toISOString(),
+      rejection_reason: reason
+    })
+    .eq("id", requestId);
+
+  if (error) {
+    console.error("Error rejecting wellness recommendation:", error);
+    return false;
+  }
+
+  return true;
+}

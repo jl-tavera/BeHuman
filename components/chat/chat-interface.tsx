@@ -2,12 +2,14 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { Mic, MicOff, Phone, PhoneOff, Menu } from "lucide-react";
+import { Mic, MicOff, Phone, PhoneOff, Menu, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
+import { WellnessRecommendationCard } from "./wellness-recommendation-card";
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRecommendation } from "@/hooks/use-recommendation";
 
 interface ChatInterfaceProps {
   agentId: string;
@@ -24,7 +26,9 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showWellnessRecommendation, setShowWellnessRecommendation] = useState(false);
   const isMobile = useIsMobile();
+  const { getRecommendation } = useRecommendation();
 
   const conversation = useConversation({
     onConnect: () => {
@@ -67,6 +71,32 @@ export function ChatInterface({
     setIsMuted(!isMuted);
     // TODO: Implement actual mute functionality with ElevenLabs
   }, [isMuted]);
+
+  const triggerWellnessDemo = useCallback(async () => {
+    console.log("Triggering wellness demo...");
+    
+    // Demo transcript simulating emotional distress
+    const demoTranscript = "Mi abuelo murió la semana pasada y me siento muy triste. No sé cómo lidiar con esta pérdida.";
+    
+    // Demo user profile
+    const demoProfile = {
+      age: 28,
+      interests: ["yoga", "meditation", "reading"],
+      lifestyle: "active",
+      location: "urban",
+      stress_level: 8
+    };
+
+    try {
+      const recommendation = await getRecommendation(demoTranscript, demoProfile);
+      if (recommendation) {
+        setShowWellnessRecommendation(true);
+        console.log("Wellness recommendation generated:", recommendation);
+      }
+    } catch (error) {
+      console.error("Error generating wellness recommendation:", error);
+    }
+  }, [getRecommendation]);
 
   const getCallState = (): CallState => {
     switch (conversation.status) {
@@ -195,7 +225,33 @@ export function ChatInterface({
             )}
           </div>
         </div>
+
+        {/* Wellness Recommendation Display */}
+        {showWellnessRecommendation && (
+          <div className="w-full max-w-lg mt-6">
+            <WellnessRecommendationCard 
+              onClose={() => setShowWellnessRecommendation(false)}
+            />
+          </div>
+        )}
       </main>
+
+      {/* Demo Controls */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="flex-shrink-0 bg-muted/50 border-t border-border px-6 py-2">
+          <div className="max-w-lg mx-auto flex items-center justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={triggerWellnessDemo}
+              className="gap-2"
+            >
+              <Heart className="h-4 w-4" />
+              Demo: Trigger Wellness Recommendation
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Call controls */}
       <footer className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border px-6 py-4">

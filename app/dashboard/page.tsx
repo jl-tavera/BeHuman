@@ -28,17 +28,15 @@ import { Progress } from "@/components/ui/progress";
 import {
   getAreaBasedMetrics,
   getDashboardMetrics,
+  getWellnessRecommendations,
+  approveWellnessRecommendation,
+  rejectWellnessRecommendation,
   type AreaData,
   type DashboardMetrics,
+  type WellnessRecommendation,
 } from "./actions";
 
-interface PendingRecommendation {
-  id: string;
-  title: string;
-  area: string;
-  cost: number;
-  priority: "alta" | "media" | "baja";
-}
+// Using WellnessRecommendation type from actions.ts
 
 const priorityColors = {
   alta: "bg-red-100 text-red-700 border-red-200",
@@ -59,7 +57,7 @@ const Dashboard = () => {
   // Budget state
   const [monthlyBudget] = useState(5000);
   const [availableBudget, setAvailableBudget] = useState(5000);
-  const [recommendations, setRecommendations] = useState<PendingRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<WellnessRecommendation[]>([]);
   const [approvedByArea, setApprovedByArea] = useState<Record<string, number>>({
     "Marketing": 0,
     "Recursos Humanos": 0,
@@ -67,7 +65,7 @@ const Dashboard = () => {
     "Ventas": 0,
     "Toda la empresa": 0,
   });
-  const [selectedRecommendation, setSelectedRecommendation] = useState<PendingRecommendation | null>(null);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<WellnessRecommendation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resultDialog, setResultDialog] = useState<{ open: boolean; approved: boolean }>({ open: false, approved: false });
 
@@ -76,13 +74,15 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [areas, dashboardMetrics] = await Promise.all([
+        const [areas, dashboardMetrics, wellnessRecs] = await Promise.all([
           getAreaBasedMetrics(),
           getDashboardMetrics(),
+          getWellnessRecommendations(),
         ]);
 
         setAreasData(areas);
         setMetrics(dashboardMetrics);
+        setRecommendations(wellnessRecs);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -96,29 +96,43 @@ const Dashboard = () => {
   const spentBudget = monthlyBudget - availableBudget;
   const spentPercentage = (spentBudget / monthlyBudget) * 100;
 
-  const handleRowClick = (rec: PendingRecommendation) => {
+  const handleRowClick = (rec: WellnessRecommendation) => {
     setSelectedRecommendation(rec);
     setDialogOpen(true);
   };
 
-  const handleApprove = () => {
+  const handleApprove = async () => {
     if (selectedRecommendation) {
-      setAvailableBudget(prev => prev - selectedRecommendation.cost);
-      setApprovedByArea(prev => ({
-        ...prev,
-        [selectedRecommendation.area]: (prev[selectedRecommendation.area] || 0) + selectedRecommendation.cost
-      }));
-      setRecommendations(prev => prev.filter(r => r.id !== selectedRecommendation.id));
-      setDialogOpen(false);
-      setResultDialog({ open: true, approved: true });
+      try {
+        await approveWellnessRecommendation(selectedRecommendation.id);
+        
+        // Update local state
+        setAvailableBudget(prev => prev - selectedRecommendation.recommended_product_price);
+        setApprovedByArea(prev => ({
+          ...prev,
+          [selectedRecommendation.situation_type]: (prev[selectedRecommendation.situation_type] || 0) + selectedRecommendation.recommended_product_price
+        }));
+        setRecommendations(prev => prev.filter(r => r.id !== selectedRecommendation.id));
+        setDialogOpen(false);
+        setResultDialog({ open: true, approved: true });
+      } catch (error) {
+        console.error('Error approving recommendation:', error);
+      }
     }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (selectedRecommendation) {
-      setRecommendations(prev => prev.filter(r => r.id !== selectedRecommendation.id));
-      setDialogOpen(false);
-      setResultDialog({ open: true, approved: false });
+      try {
+        await rejectWellnessRecommendation(selectedRecommendation.id, 'Declined by HR admin');
+        
+        // Update local state
+        setRecommendations(prev => prev.filter(r => r.id !== selectedRecommendation.id));
+        setDialogOpen(false);
+        setResultDialog({ open: true, approved: false });
+      } catch (error) {
+        console.error('Error rejecting recommendation:', error);
+      }
     }
   };
 
@@ -230,12 +244,21 @@ const Dashboard = () => {
                         className="cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => handleRowClick(rec)}
                       >
-                        <TableCell className="font-medium">{rec.title}</TableCell>
-                        <TableCell>{rec.area}</TableCell>
-                        <TableCell>${rec.cost.toLocaleString()}</TableCell>
+                        <TableCell className="font-medium">{rec.recommended_product_name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={priorityColors[rec.priority]}>
-                            {rec.priority.charAt(0).toUpperCase() + rec.priority.slice(1)}
+                          <Badge variant="outline" className="capitalize">
+                            {rec.situation_type.replace('_', ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>${rec.recommended_product_price.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={
+                            rec.situation_confidence > 0.8 ? "bg-red-100 text-red-700 border-red-200" :
+                            rec.situation_confidence > 0.5 ? "bg-amber-100 text-amber-700 border-amber-200" :
+                            "bg-emerald-100 text-emerald-700 border-emerald-200"
+                          }>
+                            {rec.situation_confidence > 0.8 ? 'Alta' : 
+                             rec.situation_confidence > 0.5 ? 'Media' : 'Baja'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -259,20 +282,55 @@ const Dashboard = () => {
 
       {/* Approval Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Aprobar Presupuesto</DialogTitle>
+            <DialogTitle>Aprobar Recomendación de Bienestar</DialogTitle>
             <DialogDescription>
-              ¿Deseas aprobar el presupuesto para "{selectedRecommendation?.title}"?
+              Revisar recomendación para empleado en situación: {selectedRecommendation?.situation_type.replace('_', ' ')}
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              Costo: <span className="font-semibold text-foreground">${selectedRecommendation?.cost.toLocaleString()}</span>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Área: <span className="font-semibold text-foreground">{selectedRecommendation?.area}</span>
-            </p>
+          <div className="py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Producto Recomendado</p>
+                <p className="text-sm text-muted-foreground">{selectedRecommendation?.recommended_product_name}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Costo</p>
+                <p className="text-sm text-muted-foreground">${selectedRecommendation?.recommended_product_price.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Situación Detectada</p>
+                <p className="text-sm text-muted-foreground capitalize">{selectedRecommendation?.situation_type.replace('_', ' ')}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Confianza</p>
+                <p className="text-sm text-muted-foreground">{((selectedRecommendation?.situation_confidence || 0) * 100).toFixed(0)}%</p>
+              </div>
+            </div>
+            
+            {selectedRecommendation?.empathic_message && (
+              <div>
+                <p className="text-sm font-medium text-foreground mb-2">Mensaje Empático</p>
+                <p className="text-sm text-muted-foreground italic bg-muted/50 p-3 rounded">
+                  "{selectedRecommendation.empathic_message}"
+                </p>
+              </div>
+            )}
+            
+            <div>
+              <p className="text-sm font-medium text-foreground mb-2">Perfil del Empleado (Anónimo)</p>
+              <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded">
+                Edad: {selectedRecommendation?.profile_snapshot?.ageCategory || 'No especificado'}<br/>
+                Intereses: {selectedRecommendation?.profile_snapshot?.hobbies?.join(', ') || 'No especificado'}<br/>
+                Metas: {selectedRecommendation?.profile_snapshot?.goals?.join(', ') || 'No especificado'}
+              </div>
+            </div>
+            
+            <div>
+              <p className="text-sm font-medium text-foreground">Impacto Estimado en Productividad</p>
+              <p className="text-sm text-muted-foreground">+{selectedRecommendation?.estimated_productivity_uplift_percent || 15}%</p>
+            </div>
           </div>
           <DialogFooter className="flex gap-2 sm:gap-0">
             <Button variant="outline" onClick={handleReject}>

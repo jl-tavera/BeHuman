@@ -84,145 +84,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-4 bg-card/50">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Complete Employee Wellness Solution
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Our AI-powered system detects emotional situations and provides personalized wellness interventions
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🧠</span>
-                </div>
-                <CardTitle className="text-primary">AI Situation Detection</CardTitle>
-                <CardDescription>
-                  Automatically detects 4 key psychological situations: breakups, family loss, economic stress, and feeling incapable
-                </CardDescription>
-              </CardHeader>
-            </Card>
 
-            {/* Feature 2 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🎯</span>
-                </div>
-                <CardTitle className="text-primary">Smart Recommendations</CardTitle>
-                <CardDescription>
-                  8-factor scoring algorithm matches employees with personalized Compensar wellness activities based on age, hobbies, and goals
-                </CardDescription>
-              </CardHeader>
-            </Card>
 
-            {/* Feature 3 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🔐</span>
-                </div>
-                <CardTitle className="text-primary">Privacy-First Design</CardTitle>
-                <CardDescription>
-                  Anonymous token system ensures complete employee privacy while providing valuable insights to HR teams
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Feature 4 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <CardTitle className="text-primary">HR Admin Dashboard</CardTitle>
-                <CardDescription>
-                  Complete interface for reviewing, approving wellness requests with real-time budget tracking and decision support
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Feature 5 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">💰</span>
-                </div>
-                <CardTitle className="text-primary">Budget Management</CardTitle>
-                <CardDescription>
-                  Automatic budget tracking with period-based allocations, preventing over-spending while maximizing employee benefits
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            {/* Feature 6 */}
-            <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">☁️</span>
-                </div>
-                <CardTitle className="text-primary">Peace of Mind</CardTitle>
-                <CardDescription>
-                  Create a serene work environment where employees feel supported, understood, and mentally balanced for optimal performance
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">How BeHuman Works</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Simple, effective wellness management in 4 steps
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-primary font-bold text-xl">1</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Employee Chat</h3>
-              <p className="text-muted-foreground">AI monitors conversations for emotional distress signals and psychological patterns</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-primary font-bold text-xl">2</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Smart Analysis</h3>
-              <p className="text-muted-foreground">System classifies situation and generates personalized wellness recommendations</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-primary font-bold text-xl">3</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">HR Review</h3>
-              <p className="text-muted-foreground">Anonymous requests appear in admin dashboard for approval within budget constraints</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-primary font-bold text-xl">4</span>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">Wellness Action</h3>
-              <p className="text-muted-foreground">Approved employees receive wellness activities and productivity improvements begin</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Benefits Section */}
       <section className="py-20 px-4 bg-card/50">
@@ -323,7 +187,7 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/admin/dashboard">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+              <Button size="lg" className="text-lg px-8 py-4 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold border-2 border-primary shadow-lg hover:shadow-xl transition-all duration-300">
                 Schedule a Demo
               </Button>
             </Link>
