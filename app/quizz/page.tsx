@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSupabaseServerClient } from "@/utils/supabase/server";
 import BehumanLogo from "@/components/BehumanLogo";
-import QuizForm from "@/components/quizz/quiz-form";
+import { QuizInterface } from "@/components/quizz/quiz-interface";
 import { PsychometricQuestion, QuestionsByCategory } from "@/components/quizz/types";
 
 export default async function QuizzPage() {
@@ -65,26 +65,9 @@ export default async function QuizzPage() {
   });
 
   return (
-    <main className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4">
-            <BehumanLogo size={48} />
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Evaluación Psicométrica</h1>
-              <p className="text-sm text-muted-foreground">
-                Responde todas las preguntas para continuar
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 pb-32">
-        <QuizForm questionsByCategory={questionsByCategory} userId={user.id} />
-      </div>
-    </main>
+    <QuizInterface
+      questionsByCategory={questionsByCategory}
+      userId={user.id}
+    />
   );
 }
