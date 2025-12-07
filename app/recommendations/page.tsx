@@ -70,12 +70,15 @@ export default async function RecommendationsPage() {
                   {activity.product_nombre}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="text-sm text-muted-foreground">
-                  <strong>Categoría:</strong> {activity.product_categoria}
-                </div>
 
-                {activity.situation_tags && (
+              <CardContent className="space-y-3">
+                {/* Category */}
+                <p className="text-sm text-muted-foreground">
+                  <strong>Categoría:</strong> {activity.product_categoria}
+                </p>
+
+                {/* Tags */}
+                {Array.isArray(activity.situation_tags) && (
                   <div className="flex flex-wrap gap-2">
                     {activity.situation_tags.map((tag: string, i: number) => (
                       <span
@@ -88,18 +91,21 @@ export default async function RecommendationsPage() {
                   </div>
                 )}
 
+                {/* Reason */}
                 {activity.reason && (
-                  <p classw="text-sm mt-1 leading-relaxed">
+                  <p className="text-sm leading-relaxed">
                     <strong>¿Por qué recomendado?</strong> {activity.reason}
                   </p>
                 )}
 
+                {/* Price */}
                 {activity.precio_desde && (
                   <p className="text-sm">
                     <strong>Precio desde:</strong> ${activity.precio_desde}
                   </p>
                 )}
 
+                {/* Status */}
                 <p className="text-xs text-muted-foreground">
                   Estado: {activity.status || "pendiente"}
                 </p>
@@ -111,3 +117,4 @@ export default async function RecommendationsPage() {
     </div>
   );
 }
+
