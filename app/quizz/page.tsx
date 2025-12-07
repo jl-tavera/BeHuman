@@ -14,6 +14,17 @@ export default async function QuizzPage() {
     redirect("/login");
   }
 
+  // Check if user is a company user - they should only access dashboard
+  const { data: companyData } = await supabase
+    .from("companies")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (companyData) {
+    redirect("/dashboard");
+  }
+
   // Fetch all active questions ordered by category and question_order
   const { data: questions, error: questionsError } = await supabase
     .from("psychometric_questions")
