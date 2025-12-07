@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Check, X, ChevronRight } from "lucide-react";
 import KpiCard from "@/components/dashboard/KpiCard";
 import PuzzleAreaCards from "@/components/dashboard/PuzzleAreaCards";
+import TrendChart from "@/components/dashboard/TrendChart";
 import BehumanLogo from "@/components/BehumanLogo";
 import { RouteGuard } from "@/components/RouteGuard";
 import {
@@ -27,10 +28,29 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   getAreaBasedMetrics,
+  getTrendData,
   getDashboardMetrics,
   type AreaData,
+  type TrendData,
   type DashboardMetrics,
 } from "./actions";
+
+// Fallback data for when database is empty
+const fallbackAreasData: AreaData[] = [
+  { name: "Marketing", data: { stress: 72, emotion: 39, anxiety: 61 } },
+  { name: "Recursos Humanos", data: { stress: 54, emotion: 71, anxiety: 48 } },
+  { name: "Operación", data: { stress: 78, emotion: 55, anxiety: 65 } },
+  { name: "Ventas", data: { stress: 65, emotion: 60, anxiety: 52 } },
+];
+
+const fallbackTrendData: TrendData = {
+  general: [
+    { month: "Q1", value: 70 },
+    { month: "Q2", value: 65 },
+    { month: "Q3", value: 60 },
+    { month: "Q4", value: 55 },
+  ],
+};
 
 interface PendingRecommendation {
   id: string;
@@ -40,6 +60,16 @@ interface PendingRecommendation {
   priority: "alta" | "media" | "baja";
 }
 
+const pendingRecommendations: PendingRecommendation[] = [
+  {
+    id: "1",
+    title: "Paquete para ir a lago sol",
+    area: "Marketing",
+    cost: 100,
+    priority: "media",
+  },
+];
+
 const priorityColors = {
   alta: "bg-red-100 text-red-700 border-red-200",
   media: "bg-amber-100 text-amber-700 border-amber-200",
@@ -48,7 +78,10 @@ const priorityColors = {
 
 const Dashboard = () => {
   // Data state
-  const [areasData, setAreasData] = useState<AreaData[]>([]);
+  const [areasData, setAreasData] = useState<AreaData[]>(fallbackAreasData);
+  const [stressTrendData, setStressTrendData] = useState<TrendData>(fallbackTrendData);
+  const [emotionTrendData, setEmotionTrendData] = useState<TrendData>(fallbackTrendData);
+  const [anxietyTrendData, setAnxietyTrendData] = useState<TrendData>(fallbackTrendData);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     generalStress: 0,
     anxietyInterventions: 0,
@@ -59,7 +92,7 @@ const Dashboard = () => {
   // Budget state
   const [monthlyBudget] = useState(5000);
   const [availableBudget, setAvailableBudget] = useState(5000);
-  const [recommendations, setRecommendations] = useState<PendingRecommendation[]>([]);
+  const [recommendations, setRecommendations] = useState(pendingRecommendations);
   const [approvedByArea, setApprovedByArea] = useState<Record<string, number>>({
     "Marketing": 0,
     "Recursos Humanos": 0,
@@ -76,12 +109,22 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [areas, dashboardMetrics] = await Promise.all([
+        const [areas, trends, dashboardMetrics] = await Promise.all([
           getAreaBasedMetrics(),
+          getTrendData(),
           getDashboardMetrics(),
         ]);
 
-        setAreasData(areas);
+        if (areas.length > 0) {
+          setAreasData(areas);
+        }
+
+        if (trends.stress.general.length > 0) {
+          setStressTrendData(trends.stress);
+          setEmotionTrendData(trends.emotion);
+          setAnxietyTrendData(trends.anxiety);
+        }
+
         setMetrics(dashboardMetrics);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -161,6 +204,35 @@ const Dashboard = () => {
           value={loading ? 0 : metrics.criticalAlerts}
           subtitle="Casos que requieren atención inmediata"
           forceColor="red"
+        />
+      </div>
+
+      {/* Trend Chart */}
+      <div className="mb-8">
+        <TrendChart
+          metrics={[
+            {
+              key: "stress",
+              label: "Estrés",
+              color: "hsl(0, 70%, 50%)",
+              isPercentage: true,
+              data: stressTrendData,
+            },
+            {
+              key: "emotion",
+              label: "Estado emocional",
+              color: "hsl(142, 70%, 45%)",
+              isPercentage: false,
+              data: emotionTrendData,
+            },
+            {
+              key: "anxiety",
+              label: "Ansiedad",
+              color: "hsl(45, 90%, 50%)",
+              isPercentage: true,
+              data: anxietyTrendData,
+            },
+          ]}
         />
       </div>
 
