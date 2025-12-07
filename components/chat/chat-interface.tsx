@@ -2,10 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Menu, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
+import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
@@ -20,8 +20,8 @@ export function ChatInterface({
   agentId,
   humanName = "Tu Compañero",
 }: ChatInterfaceProps) {
-  const router = useRouter();
   const [isMuted, setIsMuted] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -114,40 +114,38 @@ export function ChatInterface({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex-shrink-0 pt-8 pb-4 px-6">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/")}
-            className="text-muted-foreground"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          {getStatusIndicator()}
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
-      </header>
+    <>
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Main Content */}
+      <div className="h-screen bg-background flex flex-col lg:ml-64 overflow-hidden">
+        {/* Header */}
+        <header className="flex-shrink-0 pt-8 pb-4 px-6">
+          <div className="max-w-lg mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(true)}
+                className="text-muted-foreground lg:hidden"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <h1 className="text-xl font-bold text-foreground mx-auto lg:mx-0">
+                {humanName}
+              </h1>
+              <div className="w-10 lg:hidden" /> {/* Spacer for centering on mobile */}
+            </div>
+            <div className="flex justify-center">
+              {getStatusIndicator()}
+            </div>
+          </div>
+        </header>
 
       {/* Main content - AudioWave visualization */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         <div className="w-full max-w-lg space-y-8">
-          {/* Title and status */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">
-              {humanName}
-            </h2>
-            {callState !== "idle" && (
-              <p className="text-sm text-muted-foreground">
-                {callState === "connecting" && "Conectando..."}
-                {callState === "connected" && conversation.isSpeaking && "Hablando..."}
-                {callState === "connected" && !conversation.isSpeaking && "Escuchando..."}
-              </p>
-            )}
-          </div>
-
           {/* Audio wave container */}
           <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
             {callState === "idle" ? (
@@ -216,6 +214,7 @@ export function ChatInterface({
           </Button>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }

@@ -3,26 +3,73 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BehumanLogo from "@/components/BehumanLogo";
+import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
 interface OnboardingCompleteProps {
   humanName: string;
+  userId: string;
 }
 
-const OnboardingComplete = ({ humanName }: OnboardingCompleteProps) => {
+const OnboardingComplete = ({ humanName, userId }: OnboardingCompleteProps) => {
   const router = useRouter();
   const [phase, setPhase] = useState(0);
+  const [agentReady, setAgentReady] = useState(false);
 
   useEffect(() => {
+    // Animation phases
     const timers = [
       setTimeout(() => setPhase(1), 300),
       setTimeout(() => setPhase(2), 1200),
       setTimeout(() => setPhase(3), 2200),
       setTimeout(() => setPhase(4), 3200),
-      setTimeout(() => router.push("/chat"), 5500),
     ];
 
     return () => timers.forEach(clearTimeout);
-  }, [router]);
+  }, []);
+
+  useEffect(() => {
+    // Poll for agent creation
+    const checkAgentReady = async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: agent, error } = await supabase
+          .from("agents")
+          .select("elevenlabs_agent_id")
+          .eq("user_id", userId)
+          .single();
+
+        if (!error && agent?.elevenlabs_agent_id) {
+          setAgentReady(true);
+        }
+      } catch (error) {
+        console.error("Error checking agent:", error);
+      }
+    };
+
+    // Start checking after initial animation (3.5s)
+    const initialDelay = setTimeout(() => {
+      checkAgentReady();
+    }, 3500);
+
+    // Poll every 2 seconds
+    const pollInterval = setInterval(checkAgentReady, 2000);
+
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(pollInterval);
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    // Redirect only when agent is ready and minimum animation time has passed
+    if (agentReady && phase >= 4) {
+      const redirectTimer = setTimeout(() => {
+        router.push("/chat");
+      }, 1000);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [agentReady, phase, router]);
 
   return (
     <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 overflow-hidden">
@@ -132,13 +179,22 @@ const OnboardingComplete = ({ humanName }: OnboardingCompleteProps) => {
         </p>
       </div>
 
-      {/* Loading bar at bottom */}
+      {/* Loading bar and status text at bottom */}
       <div
-        className={`absolute bottom-12 left-1/2 -translate-x-1/2 w-48 h-1 bg-muted rounded-full overflow-hidden transition-opacity duration-500 ${
+        className={`absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 transition-opacity duration-500 ${
           phase >= 4 ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="h-full bg-primary animate-[loading_1.5s_ease-in-out_forwards]" />
+        <p className="text-sm text-muted-foreground">
+          {agentReady ? "¡Todo listo!" : "Preparando tu agente..."}
+        </p>
+        <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className={`h-full bg-primary transition-all duration-500 ${
+              agentReady ? "w-full" : "w-2/3 animate-pulse"
+            }`}
+          />
+        </div>
       </div>
 
       <style>{`

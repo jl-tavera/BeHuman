@@ -19,7 +19,7 @@ export default async function ChatPage() {
   // Fetch user's ElevenLabs agent
   const { data: agent, error: agentError } = await supabase
     .from("agents")
-    .select("elevenlabs_agent_id")
+    .select("elevenlabs_agent_id, agent_name")
     .eq("user_id", user.id)
     .single()
 
@@ -44,7 +44,7 @@ export default async function ChatPage() {
     <ChatInterface
       agentId={agent.elevenlabs_agent_id}
       userId={user.id}
-      humanName="Tu Compañero"
+      humanName={agent.agent_name}
     />
   )
 }
