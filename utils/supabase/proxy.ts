@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Redirect authenticated users away from login/register
+    // Redirect authenticated users away from login/register, and clear the cookie if the user is not authenticated
     if (
         user &&
         (request.nextUrl.pathname.startsWith("/login") ||
@@ -53,6 +53,14 @@ export async function updateSession(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.pathname = "/chat";
         return NextResponse.redirect(url);
+    }
+
+    if (user === null && request.nextUrl.pathname.startsWith("/login")) {
+        const response = NextResponse.next();
+        response.cookies.set("supabase-auth-token", "", {
+            expires: new Date(0),
+        });
+        return response;
     }
 
     return supabaseResponse;
