@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, X, ChevronRight } from "lucide-react";
 import KpiCard from "@/components/dashboard/KpiCard";
 import PuzzleAreaCards from "@/components/dashboard/PuzzleAreaCards";
@@ -25,29 +25,113 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  getAreaBasedMetrics,
-  getTrendData,
-  getDashboardMetrics,
-  type AreaData,
-  type TrendData,
-  type DashboardMetrics,
-} from "./actions";
 
-// Fallback data for when database is empty
-const fallbackAreasData: AreaData[] = [
+const areasData = [
   { name: "Marketing", data: { stress: 72, emotion: 39, anxiety: 61 } },
   { name: "Recursos Humanos", data: { stress: 54, emotion: 71, anxiety: 48 } },
   { name: "Operación", data: { stress: 78, emotion: 55, anxiety: 65 } },
   { name: "Ventas", data: { stress: 65, emotion: 60, anxiety: 52 } },
 ];
 
-const fallbackTrendData: TrendData = {
+// ESTRÉS – tendencia bajista con pico en Q2, pero variando bastante por área
+const stressTrendData = {
   general: [
+    { month: "Q1", value: 72 },
+    { month: "Q2", value: 76 },
+    { month: "Q3", value: 63 },
+    { month: "Q4", value: 54 },
+  ],
+  Marketing: [
+    { month: "Q1", value: 80 },
+    { month: "Q2", value: 85 },
+    { month: "Q3", value: 70 },
+    { month: "Q4", value: 60 },
+  ],
+  "Recursos Humanos": [
+    { month: "Q1", value: 60 },
+    { month: "Q2", value: 62 },
+    { month: "Q3", value: 55 },
+    { month: "Q4", value: 47 },
+  ],
+  Operación: [
+    { month: "Q1", value: 85 },
+    { month: "Q2", value: 88 },
+    { month: "Q3", value: 72 },
+    { month: "Q4", value: 65 },
+  ],
+  Ventas: [
+    { month: "Q1", value: 68 },
+    { month: "Q2", value: 73 },
+    { month: "Q3", value: 61 },
+    { month: "Q4", value: 52 },
+  ],
+};
+
+// ESTADO EMOCIONAL – tendencia alcista con curva en Q3, variando por área
+const emotionTrendData = {
+  general: [
+    { month: "Q1", value: 58 },
+    { month: "Q2", value: 66 },
+    { month: "Q3", value: 63 },
+    { month: "Q4", value: 76 },
+  ],
+  Marketing: [
+    { month: "Q1", value: 50 },
+    { month: "Q2", value: 60 },
+    { month: "Q3", value: 57 },
+    { month: "Q4", value: 72 },
+  ],
+  "Recursos Humanos": [
+    { month: "Q1", value: 72 },
+    { month: "Q2", value: 78 },
+    { month: "Q3", value: 75 },
+    { month: "Q4", value: 85 },
+  ],
+  Operación: [
+    { month: "Q1", value: 52 },
+    { month: "Q2", value: 61 },
+    { month: "Q3", value: 58 },
+    { month: "Q4", value: 68 },
+  ],
+  Ventas: [
+    { month: "Q1", value: 60 },
+    { month: "Q2", value: 67 },
+    { month: "Q3", value: 64 },
+    { month: "Q4", value: 73 },
+  ],
+};
+
+// ANSIEDAD – tendencia bajista global, pero con subidas y bajadas intermedias
+const anxietyTrendData = {
+  general: [
+    { month: "Q1", value: 62 },
+    { month: "Q2", value: 66 },
+    { month: "Q3", value: 58 },
+    { month: "Q4", value: 50 },
+  ],
+  Marketing: [
     { month: "Q1", value: 70 },
+    { month: "Q2", value: 74 },
+    { month: "Q3", value: 63 },
+    { month: "Q4", value: 57 },
+  ],
+  "Recursos Humanos": [
+    { month: "Q1", value: 55 },
+    { month: "Q2", value: 53 },
+    { month: "Q3", value: 58 },
+    { month: "Q4", value: 48 },
+  ],
+  Operación: [
+    { month: "Q1", value: 75 },
+    { month: "Q2", value: 80 },
+    { month: "Q3", value: 70 },
+    { month: "Q4", value: 68 },
+  ],
+  Ventas: [
+    { month: "Q1", value: 68 },
     { month: "Q2", value: 65 },
-    { month: "Q3", value: 60 },
-    { month: "Q4", value: 55 },
+    { month: "Q3", value: 70 },
+    { month: "Q4", value: 60 },
   ],
 };
 
@@ -76,19 +160,6 @@ const priorityColors = {
 };
 
 const Dashboard = () => {
-  // Data state
-  const [areasData, setAreasData] = useState<AreaData[]>(fallbackAreasData);
-  const [stressTrendData, setStressTrendData] = useState<TrendData>(fallbackTrendData);
-  const [emotionTrendData, setEmotionTrendData] = useState<TrendData>(fallbackTrendData);
-  const [anxietyTrendData, setAnxietyTrendData] = useState<TrendData>(fallbackTrendData);
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
-    generalStress: 0,
-    anxietyInterventions: 0,
-    criticalAlerts: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  // Budget state
   const [monthlyBudget] = useState(5000);
   const [availableBudget, setAvailableBudget] = useState(5000);
   const [recommendations, setRecommendations] = useState(pendingRecommendations);
@@ -102,38 +173,6 @@ const Dashboard = () => {
   const [selectedRecommendation, setSelectedRecommendation] = useState<PendingRecommendation | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [resultDialog, setResultDialog] = useState<{ open: boolean; approved: boolean }>({ open: false, approved: false });
-
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [areas, trends, dashboardMetrics] = await Promise.all([
-          getAreaBasedMetrics(),
-          getTrendData(),
-          getDashboardMetrics(),
-        ]);
-
-        if (areas.length > 0) {
-          setAreasData(areas);
-        }
-
-        if (trends.stress.general.length > 0) {
-          setStressTrendData(trends.stress);
-          setEmotionTrendData(trends.emotion);
-          setAnxietyTrendData(trends.anxiety);
-        }
-
-        setMetrics(dashboardMetrics);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const spentBudget = monthlyBudget - availableBudget;
   const spentPercentage = (spentBudget / monthlyBudget) * 100;
@@ -177,29 +216,19 @@ const Dashboard = () => {
         <h1 className="text-2xl md:text-3xl font-bold text-foreground">behuman</h1>
       </div>
 
-      {loading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="text-muted-foreground">Cargando datos del dashboard...</div>
-        </div>
-      )}
-
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <KpiCard
           title="Estrés general de la compañía"
-          value={loading ? 0 : Math.round(metrics.generalStress)}
+          value={71}
           subtitle="Índice promedio de estrés percibido"
           showPercentage
           invertColors
         />
-        <KpiCard
-          title="Ataques de ansiedad intervenidos"
-          value={loading ? 0 : metrics.anxietyInterventions}
-          subtitle="Intervenciones realizadas este mes"
-        />
+        <KpiCard title="Ataques de ansiedad intervenidos" value={4} subtitle="Intervenciones realizadas este mes" />
         <KpiCard
           title="Alertas de casos críticos"
-          value={loading ? 0 : metrics.criticalAlerts}
+          value={7}
           subtitle="Casos que requieren atención inmediata"
           forceColor="red"
         />
