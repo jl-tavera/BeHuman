@@ -4,6 +4,7 @@ export interface OnboardingProfile {
   human_name: string
   human_age: string
   human_gender: string
+  company_area: string | null
   life_axes: string[]
   ten_year_goals: string[]
   short_term_goals: string[]
@@ -18,6 +19,7 @@ export interface OnboardingFormData {
   human_name: string
   human_age: string
   human_gender: string
+  company_area: string
   life_axes: string[]
   ten_year_goals: string[]
   short_term_goals: string[]

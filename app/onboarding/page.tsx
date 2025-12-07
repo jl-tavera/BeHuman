@@ -29,13 +29,14 @@ export default function OnboardingPage() {
   const [humanAge, setHumanAge] = useState("");
   const [humanGender, setHumanGender] = useState("");
   const [humanName, setHumanName] = useState("");
+  const [companyArea, setCompanyArea] = useState("");
   const [lifeAxes, setLifeAxes] = useState<string[]>([]);
   const [tenYearGoals, setTenYearGoals] = useState<string[]>([]);
   const [shortTermGoals, setShortTermGoals] = useState<string[]>([]);
   const [hobbies, setHobbies] = useState<string[]>([]);
   const [emotionalHistory, setEmotionalHistory] = useState("");
 
-  const totalSteps = 8;
+  const totalSteps = 9;
 
   // Redirect to /chat if onboarding is already completed
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function OnboardingPage() {
         human_name: humanName,
         human_age: humanAge,
         human_gender: humanGender,
+        company_area: companyArea,
         life_axes: lifeAxes,
         ten_year_goals: tenYearGoals,
         short_term_goals: shortTermGoals,
@@ -175,6 +177,26 @@ export default function OnboardingPage() {
         return (
           <div className="space-y-6">
             <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">¿En qué área de la empresa trabajas?</h2>
+              <p className="text-muted-foreground">Selecciona el área que mejor describa tu rol</p>
+            </div>
+            <div className="grid gap-3">
+              {["Marketing", "Recursos Humanos", "Operación", "Ventas"].map((area) => (
+                <OnboardingOption
+                  key={area}
+                  label={area}
+                  selected={companyArea === area}
+                  onClick={() => setCompanyArea(area)}
+                />
+              ))}
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
               <h2 className="text-2xl font-bold text-foreground">¿Cuáles son tus ejes centrales en la vida?</h2>
               <p className={`text-sm ${lifeAxes.length >= 3 ? 'text-orange-500 font-medium' : 'text-muted-foreground'}`}>
                 {lifeAxes.length}/3 seleccionados {lifeAxes.length === 0 ? '(escoge al menos 1)' : ''}
@@ -198,7 +220,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-6">
             <div className="space-y-2">
@@ -226,7 +248,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-6">
             <div className="space-y-2">
@@ -256,7 +278,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 7:
+      case 8:
         return (
           <div className="space-y-6">
             <div className="space-y-2">
@@ -289,7 +311,7 @@ export default function OnboardingPage() {
           </div>
         );
 
-      case 8:
+      case 9:
         return (
           <div className="space-y-6">
             <div className="space-y-2">
@@ -315,11 +337,12 @@ export default function OnboardingPage() {
       case 1: return humanAge.length > 0;
       case 2: return humanGender.length > 0;
       case 3: return humanName.trim().length > 0;
-      case 4: return lifeAxes.length > 0 && lifeAxes.length <= 3;
-      case 5: return tenYearGoals.length > 0;
-      case 6: return shortTermGoals.length > 0 && shortTermGoals.length <= 3;
-      case 7: return hobbies.length > 0 && hobbies.length <= 5;
-      case 8: return true; // Optional
+      case 4: return companyArea.length > 0;
+      case 5: return lifeAxes.length > 0 && lifeAxes.length <= 3;
+      case 6: return tenYearGoals.length > 0;
+      case 7: return shortTermGoals.length > 0 && shortTermGoals.length <= 3;
+      case 8: return hobbies.length > 0 && hobbies.length <= 5;
+      case 9: return true; // Optional
       default: return false;
     }
   };
