@@ -39,49 +39,52 @@ import type {
 
 export const SITUATION_CONFIG: SituationConfigMap = {
   muerte_familiar: {
-    beneficial: ['tranquilo', 'introspectivo', 'naturaleza', 'mindfulness', 'expresivo', 'arte', 'musica'],
+    beneficial: ['tranquilo', 'introspectivo', 'naturaleza', 'mindfulness', 'expresivo', 'arte', 'musica', 'deportes'],
     avoid: ['competitivo', 'fiesta', 'alta_estimulacion'],
     keywords: [
       'murió', 'falleció', 'partió', 'muerte', 'duelo', 'perdí', 'perdida',
       'padre', 'madre', 'abuelo', 'abuela', 'hermano', 'hermana', 'hijo', 'hija',
       'funeral', 'luto', 'extraño mucho', 'ya no está', 'se fue'
     ],
-    description: 'La pérdida requiere espacios de calma para procesar el duelo'
+    description: 'La pérdida requiere espacios de calma y actividades que ayuden a procesar el duelo. Música reconfortante como Alter Bridge puede ayudar.'
   },
   
   causa_economica: {
-    beneficial: ['carrera', 'tech', 'crecimiento_personal', 'bienes', 'social'],
-    avoid: ['lujo', 'exclusivo'],
+    beneficial: ['carrera', 'tech', 'crecimiento_personal', 'bienes', 'social', 'educacion'],
+    avoid: ['lujo', 'exclusivo', 'costoso'],
     keywords: [
       'dinero', 'plata', 'deudas', 'despido', 'despidieron', 'sin trabajo',
       'desempleo', 'no me alcanza', 'crisis económica', 'quiebra', 'bancarrota',
       'salario', 'sueldo', 'laboral', 'jefe', 'oficina', 'empresa', 'negocio',
-      'freelance', 'emprendimiento', 'navidad', 'diciembre'
+      'freelance', 'emprendimiento', 'navidad', 'diciembre', 'gastos',
+      'no tengo pesos', 'no hay plata', 'quincena', 'colombia', 'colombiano'
     ],
-    description: 'Desarrollar habilidades y encontrar nuevas oportunidades'
+    description: 'Desarrollar habilidades y encontrar nuevas oportunidades. Especialmente importante en época de Navidad en Colombia.'
   },
   
   bloqueo_incapacidad: {
-    beneficial: ['crecimiento_personal', 'tech', 'carrera', 'salud', 'social', 'arte'],
+    beneficial: ['crecimiento_personal', 'tech', 'carrera', 'salud', 'social', 'arte', 'educacion', 'mentoria'],
     avoid: ['competitivo', 'alta_presion'],
     keywords: [
       'incapaz', 'no puedo', 'no sirvo', 'inútil', 'incompetente', 'perdido',
       'caso perdido', 'fracasado', 'impostor', 'síndrome impostor', 'no entiendo',
       'no aprendo', 'torpe', 'no sé nada', 'tecnología', 'no rindo', 'bloqueado',
-      'estancado', 'sin futuro', 'acabado', 'vida acabada', 'no valgo'
+      'estancado', 'sin futuro', 'acabado', 'vida acabada', 'no valgo',
+      'freddy vega', 'platzi', 'aprender', 'curso', 'no entiendo nada'
     ],
-    description: 'Reconstruir confianza a través de logros pequeños y conexión'
+    description: 'Reconstruir confianza a través de logros pequeños y conexión. Asesoría de Freddy Vega o cursos de Platzi pueden ayudar.'
   },
   
   rompimiento_pareja: {
-    beneficial: ['activo', 'social', 'deportes', 'viajes', 'amigos', 'musica'],
+    beneficial: ['activo', 'social', 'deportes', 'viajes', 'amigos', 'musica', 'fiesta'],
     avoid: ['romantico', 'parejas', 'citas'],
     keywords: [
       'ruptura', 'terminamos', 'separación', 'divorcio', 'ex', 'dejó', 'dejé',
       'corazón roto', 'infiel', 'infidelidad', 'engañó', 'tusa', 'despecho',
-      'soltera', 'soltero', 'relación', 'pareja', 'novio', 'novia', 'amor'
+      'soltera', 'soltero', 'relación', 'pareja', 'novio', 'novia', 'amor',
+      'rompí', 'me dejó', 'la tusa', 'despechado', 'despechada'
     ],
-    description: 'El movimiento físico y las conexiones sociales ayudan a sanar'
+    description: 'El movimiento físico y las conexiones sociales ayudan a sanar. La "tusa" se supera con amigos y actividades.'
   }
 };
 

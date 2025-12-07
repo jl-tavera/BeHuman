@@ -32,7 +32,7 @@
 export type AgeCategory = 'joven' | 'adulto' | 'mayor';
 
 /**
- * Hobbies reconocidos por el sistema
+ * Hobbies reconocidos por el sistema (from onboarding)
  */
 export type HobbyTag = 
   | 'tech' 
@@ -47,7 +47,7 @@ export type HobbyTag =
   | 'social';
 
 /**
- * Metas/objetivos del usuario
+ * Metas/objetivos del usuario (from onboarding life_axes and goals)
  */
 export type GoalTag = 
   | 'familia' 
@@ -92,18 +92,19 @@ export const SITUATION_DESCRIPTIONS: Record<SituationTag, string> = {
 
 /**
  * Profile represents an anonymous user profile
- * Used for personalized recommendations without revealing identity
+ * Built from onboarding data
  */
 export interface Profile {
   userId: string;
-  name: string;
-  age?: number;
+  name: string; // from human_name
+  age?: number; // parsed from human_age
   ageCategory?: AgeCategory;  // joven (18-30), adulto (30-50), mayor (50+)
-  gender?: 'masculino' | 'femenino' | 'no-binario' | string;
-  hobbies: string[];  // HobbyTag[]
-  goals: string[];    // GoalTag[]
-  location?: string;  // Opcional: ubicación
-  economicSituation?: string;  // Opcional: situación económica
+  gender?: 'masculino' | 'femenino' | 'no-binario' | string; // from human_gender
+  hobbies: string[];  // from onboarding hobbies
+  goals: string[];    // from life_axes + short_term_goals + ten_year_goals
+  location?: string;  // Optional: can be added to onboarding
+  economicSituation?: string;  // Optional: inferred from chat or onboarding
+  emotionalHistory?: string; // from emotional_history in onboarding
 }
 
 // Alias for backwards compatibility
