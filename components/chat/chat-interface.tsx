@@ -134,20 +134,6 @@ export function ChatInterface({
       {/* Main content - AudioWave visualization */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
         <div className="w-full max-w-lg space-y-8">
-          {/* Title and status */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">
-              {humanName}
-            </h2>
-            {callState !== "idle" && (
-              <p className="text-sm text-muted-foreground">
-                {callState === "connecting" && "Conectando..."}
-                {callState === "connected" && conversation.isSpeaking && "Hablando..."}
-                {callState === "connected" && !conversation.isSpeaking && "Escuchando..."}
-              </p>
-            )}
-          </div>
-
           {/* Audio wave container */}
           <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
             {callState === "idle" ? (
