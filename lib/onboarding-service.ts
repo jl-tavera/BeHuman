@@ -26,6 +26,7 @@ export class OnboardingService {
           human_name: data.human_name,
           human_age: data.human_age,
           human_gender: data.human_gender,
+          company_area: data.company_area || null,
           life_axes: data.life_axes,
           ten_year_goals: data.ten_year_goals,
           short_term_goals: data.short_term_goals,

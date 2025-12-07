@@ -10,6 +10,7 @@ import BehumanLogo from "@/components/BehumanLogo";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { OnboardingService } from "@/lib/onboarding-service";
+import { CompanyService } from "@/lib/company-service";
 import { toast } from "sonner";
 
 export default function LoginPage() {
@@ -36,13 +37,20 @@ export default function LoginPage() {
       } else if (data?.user) {
         toast.success("Inicio de sesión exitoso");
 
-        // Check if user has completed onboarding
-        const hasCompleted = await OnboardingService.hasCompletedOnboarding(data.user.id);
+        // Check if user is in companies table (priority check)
+        const isCompanyUser = await CompanyService.isCompanyUser(data.user.id);
 
-        if (hasCompleted) {
-          router.push("/chat");
+        if (isCompanyUser) {
+          router.push("/dashboard");
         } else {
-          router.push("/onboarding");
+          // Check if user has completed onboarding
+          const hasCompleted = await OnboardingService.hasCompletedOnboarding(data.user.id);
+
+          if (hasCompleted) {
+            router.push("/chat");
+          } else {
+            router.push("/onboarding");
+          }
         }
       }
     } catch {

@@ -1,12 +1,13 @@
 "use client";
 
-import { User, MessageSquare, ClipboardList, Lightbulb, LogOut, X } from "lucide-react";
+import { User, MessageSquare, ClipboardList, Lightbulb, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import BehumanLogo from "@/components/BehumanLogo";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   className?: string;
@@ -15,17 +16,25 @@ interface SidebarProps {
 }
 
 export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProps) {
+  const isMobile = useIsMobile();
   const { signOut } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
     router.push("/login");
+    // Close sidebar on mobile after logout
+    if (isMobile && onClose) {
+      onClose();
+    }
   };
 
   const handleNavClick = (href: string) => {
     router.push(href);
-    onClose?.();
+    // Close sidebar on mobile after navigation
+    if (isMobile && onClose) {
+      onClose();
+    }
   };
 
   const menuItems = [
@@ -41,8 +50,8 @@ export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProp
     },
     {
       icon: ClipboardList,
-      label: "Quiz",
-      href: "/quiz",
+      label: "Quizz",
+      href: "/quizz",
     },
     {
       icon: Lightbulb,
@@ -52,44 +61,23 @@ export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProp
   ];
 
   return (
-    <>
-      {/* Backdrop overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
-        />
+    <aside
+      className={cn(
+        "flex h-screen w-64 flex-col border-r bg-[hsl(var(--sidebar-background))]",
+        "fixed left-0 top-0 z-50 transition-transform duration-300",
+        // On mobile: slide in/out based on isOpen state
+        isMobile && !isOpen && "-translate-x-full",
+        className
       )}
-
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "flex h-screen w-64 flex-col border-r bg-[hsl(var(--sidebar-background))]",
-          "fixed left-0 top-0 z-50 lg:sticky",
-          "transform transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
-          className
-        )}
-        style={{ borderColor: "hsl(var(--sidebar-border))" }}
-      >
-        {/* Logo Header */}
-        <div className="flex items-center justify-between gap-3 p-6">
-          <div className="flex items-center gap-3">
-            <BehumanLogo size={40} />
-            <h1 className="text-xl font-bold text-[hsl(var(--sidebar-foreground))]">
-              behuman
-            </h1>
-          </div>
-          {/* Close button for mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden text-[hsl(var(--sidebar-foreground))]"
-            onClick={onClose}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
+      style={{ borderColor: "hsl(var(--sidebar-border))" }}
+    >
+      {/* Logo Header */}
+      <div className="flex items-center gap-3 p-6">
+        <BehumanLogo size={40} />
+        <h1 className="text-xl font-bold text-[hsl(var(--sidebar-foreground))]">
+          behuman
+        </h1>
+      </div>
 
       <Separator />
 
@@ -123,7 +111,6 @@ export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProp
           <span>Cerrar Sesión</span>
         </Button>
       </div>
-      </aside>
-    </>
+    </aside>
   );
 }

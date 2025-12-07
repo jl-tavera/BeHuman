@@ -2,26 +2,29 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { Menu, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
+import { Mic, MicOff, Phone, PhoneOff, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInterfaceProps {
   agentId: string;
   userId: string;
-  humanName?: string;
+  agentName?: string;
 }
 
 type CallState = "idle" | "connecting" | "connected";
 
 export function ChatInterface({
   agentId,
-  humanName = "Tu Compañero",
+  userId,
+  agentName = "Tu Compañero",
 }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const conversation = useConversation({
     onConnect: () => {
@@ -47,11 +50,14 @@ export function ChatInterface({
       await conversation.startSession({
         agentId,
         connectionType: "webrtc",
+        dynamicVariables: {
+          user_id: userId,
+        },
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
     }
-  }, [agentId, conversation]);
+  }, [agentId, userId, conversation]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
@@ -82,7 +88,7 @@ export function ChatInterface({
       case "connected":
         return conversation.isSpeaking ? "Hablando..." : "Escuchando...";
       default:
-        return humanName;
+        return "";
     }
   };
 
@@ -110,32 +116,45 @@ export function ChatInterface({
       );
     }
 
-    return <span className="text-sm font-medium text-muted-foreground">{humanName}</span>;
+    return null;
   };
 
   return (
     <>
       {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
-      <div className="h-screen bg-background flex flex-col lg:ml-64 overflow-hidden">
+      <div className={cn(
+        "h-screen bg-background flex flex-col overflow-hidden transition-all",
+        !isMobile && "ml-64"
+      )}>
         {/* Header */}
-        <header className="flex-shrink-0 pt-8 pb-4 px-6">
+        <header className="flex-shrink-0 pt-6 pb-3 px-6">
           <div className="max-w-lg mx-auto">
-            <div className="flex items-center justify-between mb-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSidebarOpen(true)}
-                className="text-muted-foreground lg:hidden"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-              <h1 className="text-xl font-bold text-foreground mx-auto lg:mx-0">
-                {humanName}
+            <div className="flex items-center justify-center mb-3 relative">
+              {/* Hamburger menu button - only on mobile */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-0"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+              <h1 className="text-xl font-bold text-foreground">
+                {agentName}
               </h1>
-              <div className="w-10 lg:hidden" /> {/* Spacer for centering on mobile */}
             </div>
             <div className="flex justify-center">
               {getStatusIndicator()}
@@ -144,12 +163,12 @@ export function ChatInterface({
         </header>
 
       {/* Main content - AudioWave visualization */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
-        <div className="w-full max-w-lg space-y-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 overflow-hidden min-h-0">
+        <div className="w-full max-w-lg">
           {/* Audio wave container */}
-          <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
+          <div className="relative w-full flex items-center justify-center">
             {callState === "idle" ? (
-              <div className="text-center space-y-6">
+              <div className="text-center space-y-4">
                 {/* Static audio waves when idle */}
                 <div className="h-48 flex items-center justify-center">
                   <AudioWave
@@ -163,7 +182,7 @@ export function ChatInterface({
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center gap-8 w-full">
+              <div className="flex flex-col items-center justify-center gap-4 w-full">
                 {/* Animated waves when speaking, static when listening */}
                 <div className="h-48 flex items-center justify-center w-full">
                   <AudioWave
@@ -179,7 +198,7 @@ export function ChatInterface({
       </main>
 
       {/* Call controls */}
-      <footer className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-6 py-6">
+      <footer className="flex-shrink-0 bg-background/95 backdrop-blur-sm border-t border-border px-6 py-4">
         <div className="max-w-lg mx-auto flex items-center justify-center gap-4">
           {callState !== "idle" && (
             <Button

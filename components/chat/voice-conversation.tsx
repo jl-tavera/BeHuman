@@ -10,7 +10,7 @@ interface VoiceConversationProps {
   userId: string
 }
 
-export function VoiceConversation({ agentId }: VoiceConversationProps) {
+export function VoiceConversation({ agentId, userId }: VoiceConversationProps) {
   const conversation = useConversation({
     onConnect: () => {
       console.log("Connected to ElevenLabs")
@@ -35,11 +35,14 @@ export function VoiceConversation({ agentId }: VoiceConversationProps) {
       await conversation.startSession({
         agentId,
         connectionType: "webrtc",
+        dynamicVariables: {
+          user_id: userId,
+        },
       })
     } catch (error) {
       console.error("Failed to start conversation:", error)
     }
-  }, [agentId, conversation])
+  }, [agentId, userId, conversation])
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession()
