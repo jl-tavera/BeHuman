@@ -18,7 +18,7 @@ const OnboardingComplete = ({ humanName }: OnboardingCompleteProps) => {
       setTimeout(() => setPhase(2), 1200),
       setTimeout(() => setPhase(3), 2200),
       setTimeout(() => setPhase(4), 3200),
-      setTimeout(() => router.push("/app"), 5500),
+      setTimeout(() => router.push("/chat"), 5500),
     ];
 
     return () => timers.forEach(clearTimeout);

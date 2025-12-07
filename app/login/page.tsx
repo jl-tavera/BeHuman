@@ -40,7 +40,7 @@ export default function LoginPage() {
         const hasCompleted = await OnboardingService.hasCompletedOnboarding(data.user.id);
 
         if (hasCompleted) {
-          router.push("/app");
+          router.push("/chat");
         } else {
           router.push("/onboarding");
         }

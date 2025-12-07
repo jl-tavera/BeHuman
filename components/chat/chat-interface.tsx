@@ -116,53 +116,73 @@ export function ChatInterface({
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="flex items-center justify-between p-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push("/")}
-          className="text-muted-foreground"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        {getStatusIndicator()}
-        <div className="w-10" /> {/* Spacer for centering */}
+      <header className="flex-shrink-0 pt-8 pb-4 px-6">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/")}
+            className="text-muted-foreground"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          {getStatusIndicator()}
+          <div className="w-10" /> {/* Spacer for centering */}
+        </div>
       </header>
 
       {/* Main content - AudioWave visualization */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pb-4">
-        <div className="relative w-full max-w-sm aspect-square bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-          {callState === "idle" ? (
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
-                <Phone className="w-10 h-10 text-primary" />
-              </div>
-              <p className="text-muted-foreground text-sm">
-                Toca el botón para iniciar
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
+        <div className="w-full max-w-lg space-y-8">
+          {/* Title and status */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">
+              {humanName}
+            </h2>
+            {callState !== "idle" && (
+              <p className="text-sm text-muted-foreground">
+                {callState === "connecting" && "Conectando..."}
+                {callState === "connected" && conversation.isSpeaking && "Hablando..."}
+                {callState === "connected" && !conversation.isSpeaking && "Escuchando..."}
               </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-8 p-8">
-              <AudioWave
-                isActive={callState === "connected" && conversation.isSpeaking}
-                barCount={7}
-                className="h-48"
-              />
-              {callState === "connected" && (
-                <p className="text-muted-foreground text-sm text-center">
-                  {conversation.isSpeaking
-                    ? "Tu compañero está hablando..."
-                    : "Te estoy escuchando..."}
+            )}
+          </div>
+
+          {/* Audio wave container */}
+          <div className="relative w-full aspect-square max-w-sm mx-auto flex items-center justify-center">
+            {callState === "idle" ? (
+              <div className="text-center space-y-6">
+                {/* Static audio waves when idle */}
+                <div className="h-48 flex items-center justify-center">
+                  <AudioWave
+                    isActive={false}
+                    barCount={7}
+                    className="h-48 w-full"
+                  />
+                </div>
+                <p className="text-muted-foreground text-base">
+                  Toca el botón para iniciar
                 </p>
-              )}
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-8 w-full">
+                {/* Animated waves when speaking, static when listening */}
+                <div className="h-48 flex items-center justify-center w-full">
+                  <AudioWave
+                    isActive={callState === "connected" && conversation.isSpeaking}
+                    barCount={7}
+                    className="h-48 w-full"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
       {/* Call controls */}
-      <footer className="pb-8 pt-4">
-        <div className="flex items-center justify-center gap-4">
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-6 py-6">
+        <div className="max-w-lg mx-auto flex items-center justify-center gap-4">
           {callState !== "idle" && (
             <Button
               variant="outline"

@@ -37,10 +37,10 @@ export default function OnboardingPage() {
 
   const totalSteps = 8;
 
-  // Redirect to /app if onboarding is already completed
+  // Redirect to /chat if onboarding is already completed
   useEffect(() => {
     if (!onboardingLoading && hasCompleted) {
-      router.push("/app");
+      router.push("/chat");
     }
   }, [hasCompleted, onboardingLoading, router]);
 

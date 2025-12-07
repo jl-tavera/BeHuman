@@ -33,10 +33,10 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Protect /app and /onboarding routes - require authentication
+    // Protect /chat and /onboarding routes - require authentication
     if (
         user === null &&
-        (request.nextUrl.pathname.startsWith("/app") ||
+        (request.nextUrl.pathname.startsWith("/chat") ||
             request.nextUrl.pathname.startsWith("/onboarding"))
     ) {
         const url = request.nextUrl.clone();
@@ -51,7 +51,7 @@ export async function updateSession(request: NextRequest) {
             request.nextUrl.pathname.startsWith("/register"))
     ) {
         const url = request.nextUrl.clone();
-        url.pathname = "/app";
+        url.pathname = "/chat";
         return NextResponse.redirect(url);
     }
 
