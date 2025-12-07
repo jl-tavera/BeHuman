@@ -1,69 +1,116 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
-import { getSupabaseServerClient } from "@/utils/supabase/server";
-import BehumanLogo from "@/components/BehumanLogo";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sidebar } from "@/components/sidebar";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import BehumanLogo from "@/components/BehumanLogo";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getSupabaseBrowserClient } from "@/utils/supabase/client";
 
-export default async function RecommendationsPage() {
-  const supabase = await getSupabaseServerClient();
+export default function RecommendationsPage() {
+  const supabase = getSupabaseBrowserClient();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [activities, setActivities] = useState<any[]>([]);
+  const isMobile = useIsMobile();
 
-  // Check authentication
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+  // LOAD USER + ACTIVITIES ON CLIENT
+  useEffect(() => {
+    async function loadData() {
+      const { data: auth } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    redirect("/login");
-  }
+      if (!auth?.user) {
+        redirect("/login");
+        return;
+      }
 
-  // Fetch user-specific recommended activities
-  const { data: activities, error: actError } = await supabase
-    .from("recommended_user_activities")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+      const { data } = await supabase
+        .from("recommended_user_activities")
+        .select("*")
+        .eq("user_id", auth.user.id)
+        .order("created_at", { ascending: false });
 
-  if (actError) {
-    console.error("Error fetching activities:", actError);
+      setActivities(data || []);
+      setLoading(false);
+    }
+
+    loadData();
+  }, []);
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <BehumanLogo size={64} />
-        <h1 className="text-2xl font-bold">Error al cargar recomendaciones</h1>
-        <p className="text-muted-foreground">
-          No se pudieron cargar tus actividades recomendadas. Intenta de nuevo más tarde.
-        </p>
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Cargando recomendaciones...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* --- HEADER --- */}
-      <header className="flex items-center justify-between px-4 py-4 border-b">
-        <div className="flex items-center gap-3">
-          <BehumanLogo size={44} />
-          <h1 className="text-xl font-semibold">Recomendaciones</h1>
-        </div>
-        <Button variant="ghost" size="icon">
-          <Menu className="h-6 w-6" />
-        </Button>
-      </header>
+    <>
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* --- CONTENT --- */}
-      <main className="p-4 space-y-4">
-        {(!activities || activities.length === 0) && (
-          <div className="text-center mt-16 space-y-2">
-            <h2 className="text-lg font-bold">Sin actividades por ahora</h2>
-            <p className="text-muted-foreground">
-              Aún no hay recomendaciones listas para ti.
-            </p>
-          </div>
+      {/* Mobile overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Page wrapper */}
+      <div
+        className={cn(
+          "min-h-screen bg-background flex flex-col transition-all",
+          !isMobile && "ml-64"
         )}
+      >
+        {/* Header */}
+        <header className="flex-shrink-0 pt-6 pb-3 px-6 sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-center mb-3 relative">
+              {/* Mobile hamburger */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-0"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
 
-        <div className="space-y-4">
-          {activities?.map((activity) => (
+              <div className="flex items-center gap-3">
+                <BehumanLogo size={36} />
+                <h1 className="text-xl font-bold">Recomendaciones</h1>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <p className="text-sm text-muted-foreground">
+                Actividades recomendadas especialmente para ti
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="max-w-4xl mx-auto px-4 py-8 pb-32 w-full space-y-4">
+          {activities.length === 0 && (
+            <div className="text-center space-y-2 mt-16">
+              <h2 className="text-lg font-bold">Sin actividades por ahora</h2>
+              <p className="text-muted-foreground">
+                Aún no hay recomendaciones listas para ti.
+              </p>
+            </div>
+          )}
+
+          {activities.map((activity) => (
             <Card key={activity.id} className="shadow-sm border">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">
@@ -72,12 +119,10 @@ export default async function RecommendationsPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                {/* Category */}
                 <p className="text-sm text-muted-foreground">
                   <strong>Categoría:</strong> {activity.product_categoria}
                 </p>
 
-                {/* Tags */}
                 {Array.isArray(activity.situation_tags) && (
                   <div className="flex flex-wrap gap-2">
                     {activity.situation_tags.map((tag: string, i: number) => (
@@ -91,21 +136,18 @@ export default async function RecommendationsPage() {
                   </div>
                 )}
 
-                {/* Reason */}
                 {activity.reason && (
                   <p className="text-sm leading-relaxed">
                     <strong>¿Por qué recomendado?</strong> {activity.reason}
                   </p>
                 )}
 
-                {/* Price */}
                 {activity.precio_desde && (
                   <p className="text-sm">
                     <strong>Precio desde:</strong> ${activity.precio_desde}
                   </p>
                 )}
 
-                {/* Status */}
                 <p className="text-xs text-muted-foreground">
                   Estado: {activity.status || "pendiente"}
                 </p>
@@ -113,8 +155,9 @@ export default async function RecommendationsPage() {
             </Card>
           ))}
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
+
 
