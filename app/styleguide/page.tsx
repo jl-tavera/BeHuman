@@ -6,12 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { RouteGuard } from "@/components/RouteGuard";
 
 export default function Styleguide() {
   return (
-    <RouteGuard allowCompanyUsers={false}>
-      <main className="min-h-screen bg-background p-8 md:p-12">
+    <main className="min-h-screen bg-background p-8 md:p-12">
       <div className="mx-auto max-w-4xl space-y-12">
         {/* Header */}
         <header className="space-y-4">
@@ -182,10 +180,9 @@ export default function Styleguide() {
           </p>
         </footer>
       </div>
-      </main>
-    </RouteGuard>
+    </main>
   );
-}
+};
 
 const ColorSwatch = ({ name, className, hsl }: { name: string; className: string; hsl: string }) => (
   <div className="space-y-2">

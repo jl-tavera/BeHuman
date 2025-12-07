@@ -16,17 +16,6 @@ export default async function ChatPage() {
     redirect("/login")
   }
 
-  // Check if user is a company user - they should only access dashboard
-  const { data: companyData } = await supabase
-    .from("companies")
-    .select("id")
-    .eq("user_id", user.id)
-    .single()
-
-  if (companyData) {
-    redirect("/dashboard")
-  }
-
   // Fetch user's ElevenLabs agent
   const { data: agent, error: agentError } = await supabase
     .from("agents")

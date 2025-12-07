@@ -14,7 +14,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { OnboardingService } from "@/lib/onboarding-service";
 import { toast } from "sonner";
-import { RouteGuard } from "@/components/RouteGuard";
 
 type OnboardingPhase = "intro" | "questions" | "complete";
 
@@ -369,54 +368,52 @@ export default function OnboardingPage() {
   }
 
   return (
-    <RouteGuard allowCompanyUsers={false}>
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Content */}
-        <main className="flex-1 px-4 py-8 overflow-y-auto">
-          <div className="max-w-lg mx-auto">
-            {/* Logo */}
-            <div className="flex justify-center mb-8">
-              <BehumanLogo size={48} />
-            </div>
-
-            {/* Step content */}
-            <div className="animate-fade-in">
-              {renderStep()}
-            </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Content */}
+      <main className="flex-1 px-4 py-8 overflow-y-auto">
+        <div className="max-w-lg mx-auto">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <BehumanLogo size={48} />
           </div>
-        </main>
+          
+          {/* Step content */}
+          <div className="animate-fade-in">
+            {renderStep()}
+          </div>
+        </div>
+      </main>
 
-        {/* Footer */}
-        <footer className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-4">
-          <div className="max-w-lg mx-auto flex gap-3">
-            {currentStep > 1 && (
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="flex-1 py-6"
-                disabled={saving}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Atrás
-              </Button>
-            )}
+      {/* Footer */}
+      <footer className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 py-4">
+        <div className="max-w-lg mx-auto flex gap-3">
+          {currentStep > 1 && (
             <Button
-              onClick={handleNext}
-              disabled={!canProceed() || saving}
+              variant="outline"
+              onClick={handleBack}
               className="flex-1 py-6"
+              disabled={saving}
             >
-              {saving ? (
-                "Guardando..."
-              ) : currentStep === totalSteps ? (
-                "Finalizar"
-              ) : (
-                "Continuar"
-              )}
-              {currentStep !== totalSteps && !saving && <ArrowRight className="w-4 h-4 ml-2" />}
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Atrás
             </Button>
-          </div>
-        </footer>
-      </div>
-    </RouteGuard>
+          )}
+          <Button
+            onClick={handleNext}
+            disabled={!canProceed() || saving}
+            className="flex-1 py-6"
+          >
+            {saving ? (
+              "Guardando..."
+            ) : currentStep === totalSteps ? (
+              "Finalizar"
+            ) : (
+              "Continuar"
+            )}
+            {currentStep !== totalSteps && !saving && <ArrowRight className="w-4 h-4 ml-2" />}
+          </Button>
+        </div>
+      </footer>
+    </div>
   );
 }

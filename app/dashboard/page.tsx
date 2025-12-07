@@ -6,7 +6,6 @@ import KpiCard from "@/components/dashboard/KpiCard";
 import PuzzleAreaCards from "@/components/dashboard/PuzzleAreaCards";
 import TrendChart from "@/components/dashboard/TrendChart";
 import BehumanLogo from "@/components/BehumanLogo";
-import { RouteGuard } from "@/components/RouteGuard";
 import {
   Table,
   TableBody,
@@ -171,13 +170,12 @@ const Dashboard = () => {
   };
 
   return (
-    <RouteGuard allowCompanyUsers={true}>
-      <div className="min-h-screen bg-background p-6 md:p-10">
-        {/* Header con logo y título */}
-        <div className="flex items-center gap-3 mb-8">
-          <BehumanLogo size={40} />
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">behuman</h1>
-        </div>
+    <div className="min-h-screen bg-background p-6 md:p-10">
+      {/* Header con logo y título */}
+      <div className="flex items-center gap-3 mb-8">
+        <BehumanLogo size={40} />
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">behuman</h1>
+      </div>
 
       {loading && (
         <div className="flex items-center justify-center py-8">
@@ -390,8 +388,7 @@ const Dashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      </div>
-    </RouteGuard>
+    </div>
   );
 };
 
