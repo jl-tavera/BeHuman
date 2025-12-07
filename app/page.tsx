@@ -166,11 +166,11 @@ export default function Home() {
             <Card className="border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-lg">
               <CardHeader>
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-2xl">🌿</span>
+                  <span className="text-2xl">☁️</span>
                 </div>
-                <CardTitle className="text-primary">Colombian Context</CardTitle>
+                <CardTitle className="text-primary">Peace of Mind</CardTitle>
                 <CardDescription>
-                  Culturally aware system with local keywords like "tusa", "Freddy Vega", and holiday-specific stress detection
+                  Create a serene work environment where employees feel supported, understood, and mentally balanced for optimal performance
                 </CardDescription>
               </CardHeader>
             </Card>
