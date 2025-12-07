@@ -1,14 +1,14 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { User, Session, AuthChangeEvent, AuthTokenResponsePassword } from '@supabase/supabase-js';
 import { getSupabaseBrowserClient } from '@/utils/supabase/client';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<AuthTokenResponsePassword>;
   signUp: (email: string, password: string, metadata?: Record<string, unknown>) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
