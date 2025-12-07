@@ -9,6 +9,7 @@ export interface OnboardingProfile {
   short_term_goals: string[]
   hobbies: string[]
   emotional_history: string | null
+  elevenlabs_agent_id: string | null
   completed_at: string
   updated_at: string
 }
