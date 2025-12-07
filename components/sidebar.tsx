@@ -32,22 +32,22 @@ export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProp
     {
       icon: User,
       label: "Perfil",
-      href: "/app/profile",
+      href: "/profile",
     },
     {
       icon: MessageSquare,
       label: "Chat",
-      href: "/app/chat",
+      href: "/chat",
     },
     {
       icon: ClipboardList,
       label: "Quiz",
-      href: "/app/quiz",
+      href: "/quiz",
     },
     {
       icon: Lightbulb,
       label: "Recomendaciones",
-      href: "/app/recommendations",
+      href: "/recommendations",
     },
   ];
 

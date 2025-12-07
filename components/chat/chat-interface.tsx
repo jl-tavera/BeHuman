@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
 import { Sidebar } from "@/components/sidebar";
+import BehumanLogo from "@/components/BehumanLogo";
 import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
@@ -124,17 +125,27 @@ export function ChatInterface({
       <div className="min-h-screen bg-background flex flex-col lg:ml-64">
         {/* Header */}
         <header className="flex-shrink-0 pt-8 pb-4 px-6">
-          <div className="max-w-lg mx-auto flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSidebarOpen(true)}
-              className="text-muted-foreground"
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-            {getStatusIndicator()}
-            <div className="w-10" /> {/* Spacer for centering */}
+          <div className="max-w-lg mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsSidebarOpen(true)}
+                className="text-muted-foreground lg:hidden"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              <div className="flex items-center gap-3 mx-auto lg:mx-0">
+                <BehumanLogo size={32} />
+                <h1 className="text-xl font-bold text-foreground">
+                  behuman
+                </h1>
+              </div>
+              <div className="w-10 lg:hidden" /> {/* Spacer for centering on mobile */}
+            </div>
+            <div className="flex justify-center">
+              {getStatusIndicator()}
+            </div>
           </div>
         </header>
 
