@@ -3,11 +3,9 @@
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
 import { Menu, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
 import { Sidebar } from "@/components/sidebar";
-import BehumanLogo from "@/components/BehumanLogo";
 import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
@@ -22,7 +20,6 @@ export function ChatInterface({
   agentId,
   humanName = "Tu Compañero",
 }: ChatInterfaceProps) {
-  const router = useRouter();
   const [isMuted, setIsMuted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -122,7 +119,7 @@ export function ChatInterface({
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Main Content */}
-      <div className="min-h-screen bg-background flex flex-col lg:ml-64">
+      <div className="h-screen bg-background flex flex-col lg:ml-64 overflow-hidden">
         {/* Header */}
         <header className="flex-shrink-0 pt-8 pb-4 px-6">
           <div className="max-w-lg mx-auto">
@@ -135,12 +132,9 @@ export function ChatInterface({
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="flex items-center gap-3 mx-auto lg:mx-0">
-                <BehumanLogo size={32} />
-                <h1 className="text-xl font-bold text-foreground">
-                  behuman
-                </h1>
-              </div>
+              <h1 className="text-xl font-bold text-foreground mx-auto lg:mx-0">
+                {humanName}
+              </h1>
               <div className="w-10 lg:hidden" /> {/* Spacer for centering on mobile */}
             </div>
             <div className="flex justify-center">
