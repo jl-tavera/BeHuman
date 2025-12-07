@@ -1815,4 +1815,4 @@ If you want, I can also:
 ✅ Auto-generate your database SQL file
 ✅ Generate a diagram (Mermaid)
 ✅ Create a CHANGELOG.md
-Just tell me.ññ
+Just tell me.

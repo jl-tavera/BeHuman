@@ -7,6 +7,17 @@
  * 3. Assigns appropriate situation_tags (the 4 main situations)
  * 4. Assigns appropriate profile_tags (age, hobbies, goals)
  * 5. Updates the database
+ * 
+ * PROFILE_TAGS Structure:
+ * - Age: joven (18-30) | adulto (30-50) | mayor (50+)
+ * - Hobbies: tech, musica, deportes, arte, lectura, cocina, viajes, naturaleza, manualidades, social
+ * - Goals: familia, amigos, bienes, carrera, salud, crecimiento_personal, estabilidad
+ * 
+ * SITUATION_TAGS Structure (4 main categories):
+ * - muerte_familiar: Calming, healing, introspective activities
+ * - causa_economica: Educational, career growth, affordable options
+ * - bloqueo_incapacidad: Learning, mentoring, skill-building
+ * - rompimiento_pareja: Social, active, fun, distracting
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -16,208 +27,258 @@ const SUPABASE_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIU
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+interface Product {
+  id?: string;
+  nombre: string;
+  descripcion?: string;
+  categoria_principal?: string;
+  subcategoria?: string;
+  precio_desde?: number;
+  precio_hasta?: number;
+  profile_tags?: string[];
+  situation_tags?: string[];
+}
+
 // ============================================================================
-// TAG INFERENCE RULES
+// SITUATION TAG INFERENCE - Which of 4 situations does this help with?
 // ============================================================================
 
 /**
  * Determines which situation_tags apply to a product
- * Products can have multiple situation tags if applicable
+ * Based on therapeutic benefits of the activity
  */
-function inferSituationTags(product: any): string[] {
+function inferSituationTags(product: Product): string[] {
   const text = `${product.nombre} ${product.descripcion || ''} ${product.categoria_principal || ''} ${product.subcategoria || ''}`.toLowerCase();
   const tags: string[] = [];
 
-  // MUERTE_FAMILIAR - Calming, introspective, healing activities
+  // ========== MUERTE_FAMILIAR ==========
+  // Calm, introspective, healing, emotional processing
   if (
-    text.includes('música') ||
-    text.includes('meditación') ||
     text.includes('yoga') ||
-    text.includes('spa') ||
-    text.includes('relax') ||
-    text.includes('naturaleza') ||
-    text.includes('arte') ||
-    text.includes('terapia') ||
+    text.includes('meditación') ||
     text.includes('mindfulness') ||
-    text.includes('tranquil') ||
-    text.includes('paz') ||
-    text.includes('calm')
+    text.includes('spa') ||
+    text.includes('relajación') ||
+    text.includes('massage') ||
+    text.includes('masaje') ||
+    text.includes('terapia') ||
+    text.includes('psicología') ||
+    text.includes('psicólog') ||
+    text.includes('art therapy') ||
+    text.includes('arteterapia') ||
+    text.includes('music therapy') ||
+    text.includes('musicoterapia') ||
+    text.includes('retiro') ||
+    text.includes('wellness') ||
+    text.includes('holístico') ||
+    text.includes('acupuntura') ||
+    text.includes('reiki') ||
+    (text.includes('música') && (text.includes('tranquilo') || text.includes('relajante'))) ||
+    (text.includes('naturaleza') && (text.includes('camina') || text.includes('excursión'))) ||
+    text.includes('horticultura') ||
+    text.includes('flores')
   ) {
     tags.push('muerte_familiar');
   }
 
-  // CAUSA_ECONOMICA - Educational, career development, affordable
+  // ========== CAUSA_ECONOMICA ==========
+  // Educational, career advancement, financial literacy, affordable/free
   if (
     text.includes('curso') ||
-    text.includes('taller') ||
     text.includes('capacitación') ||
     text.includes('educación') ||
+    text.includes('educativo') ||
     text.includes('aprendizaje') ||
     text.includes('formación') ||
+    text.includes('entrenamiento') ||
+    text.includes('workshop') ||
+    text.includes('webinar') ||
+    text.includes('seminario') ||
+    text.includes('taller') ||
     text.includes('emprendimiento') ||
+    text.includes('startup') ||
     text.includes('negocio') ||
+    text.includes('carrera') ||
+    text.includes('empleo') ||
+    text.includes('trabajo') ||
+    text.includes('laboral') ||
+    text.includes('habilidad') ||
+    text.includes('skill') ||
+    text.includes('profesional') ||
+    text.includes('asesoría') ||
+    text.includes('consultoría') ||
+    text.includes('mentor') ||
+    text.includes('coaching') ||
+    text.includes('finanzas') ||
+    text.includes('financiera') ||
+    text.includes('presupuesto') ||
+    text.includes('ahorro') ||
+    text.includes('inversión') ||
+    text.includes('gratis') ||
+    text.includes('gratuito') ||
+    text.includes('económico') ||
+    text.includes('asequible') ||
     text.includes('tech') ||
     text.includes('tecnología') ||
-    text.includes('habilidad') ||
-    text.includes('carrera') ||
-    text.includes('gratis') ||
-    text.includes('económico') ||
-    text.includes('asesoría')
+    text.includes('programación') ||
+    text.includes('código')
   ) {
     tags.push('causa_economica');
   }
 
-  // BLOQUEO_INCAPACIDAD - Learning, mentoring, skill-building
+  // ========== BLOQUEO_INCAPACIDAD ==========
+  // Building confidence, overcoming fear, learning basics, mentorship
   if (
-    text.includes('curso') ||
     text.includes('aprender') ||
-    text.includes('taller') ||
+    text.includes('aprendizaje') ||
+    text.includes('curso') ||
+    text.includes('introducción') ||
+    text.includes('fundamentos') ||
+    text.includes('básico') ||
+    text.includes('principiante') ||
+    text.includes('iniciante') ||
     text.includes('mentoría') ||
-    text.includes('asesoría') ||
+    text.includes('mentor') ||
     text.includes('coaching') ||
     text.includes('desarrollo personal') ||
     text.includes('crecimiento') ||
-    text.includes('habilidad') ||
-    text.includes('básico') ||
-    text.includes('principiante') ||
-    text.includes('introducción') ||
-    text.includes('fundamentos')
+    text.includes('autoestima') ||
+    text.includes('confianza') ||
+    text.includes('transformación') ||
+    text.includes('superar') ||
+    text.includes('reto') ||
+    text.includes('desafío') ||
+    text.includes('logro') ||
+    text.includes('éxito') ||
+    text.includes('apoyo emocional') ||
+    text.includes('psicología') ||
+    text.includes('asesoría personal') ||
+    text.includes('competencia')
   ) {
     tags.push('bloqueo_incapacidad');
   }
 
-  // ROMPIMIENTO_PAREJA - Social, active, fun, distracting
+  // ========== ROMPIMIENTO_PAREJA ==========
+  // Social activities, physical exercise, fun, distraction, group activities
   if (
     text.includes('deporte') ||
+    text.includes('deportivo') ||
+    text.includes('fútbol') ||
+    text.includes('basketball') ||
+    text.includes('tenis') ||
+    text.includes('golf') ||
+    text.includes('voleibol') ||
+    text.includes('natación') ||
+    text.includes('ciclismo') ||
+    text.includes('atletismo') ||
+    text.includes('cross fit') ||
+    text.includes('crossfit') ||
+    text.includes('gym') ||
+    text.includes('fitness') ||
+    text.includes('entrenamiento') ||
+    text.includes('ejercicio') ||
+    text.includes('actividad física') ||
+    text.includes('team building') ||
     text.includes('team') ||
     text.includes('equipo') ||
     text.includes('grupo') ||
     text.includes('social') ||
+    text.includes('evento') ||
     text.includes('fiesta') ||
     text.includes('baile') ||
-    text.includes('amigos') ||
-    text.includes('aventura') ||
+    text.includes('danza') ||
+    text.includes('concierto') ||
+    text.includes('música') ||
     text.includes('viaje') ||
-    text.includes('activ') ||
+    text.includes('turismo') ||
+    text.includes('excursión') ||
+    text.includes('aventura') ||
+    text.includes('camping') ||
+    text.includes('amigos') ||
     text.includes('diversión') ||
-    text.includes('entretenimiento')
+    text.includes('entretenimiento') ||
+    text.includes('recreación')
   ) {
     tags.push('rompimiento_pareja');
   }
 
-  // If no tags matched, assign most general ones
+  // If no tags matched, assign general ones based on category
   if (tags.length === 0) {
-    tags.push('bloqueo_incapacidad', 'causa_economica');
+    if (product.categoria_principal?.toLowerCase().includes('educación') ||
+        product.categoria_principal?.toLowerCase().includes('capacitación')) {
+      tags.push('causa_economica', 'bloqueo_incapacidad');
+    } else if (product.categoria_principal?.toLowerCase().includes('deporte') ||
+               product.categoria_principal?.toLowerCase().includes('bienestar')) {
+      tags.push('rompimiento_pareja', 'muerte_familiar');
+    } else {
+      tags.push('bloqueo_incapacidad', 'causa_economica');
+    }
   }
 
-  return Array.from(new Set(tags)); // Remove duplicates
+  return Array.from(new Set(tags));
 }
 
-/**
- * Determines profile_tags for a product
- * Includes: age categories + hobby/activity types
- */
-function inferProfileTags(product: any): string[] {
+// ============================================================================
+// PROFILE TAG INFERENCE - Age, hobbies, goals
+// ============================================================================
+
+function inferProfileTags(product: Product): string[] {
   const text = `${product.nombre} ${product.descripcion || ''} ${product.categoria_principal || ''} ${product.subcategoria || ''}`.toLowerCase();
   const tags: string[] = [];
 
-  // AGE CATEGORIES - Assign based on activity type
-  const isYouthActivity = 
-    text.includes('deporte extremo') ||
-    text.includes('gaming') ||
-    text.includes('videojuego') ||
-    text.includes('fiesta') ||
-    text.includes('baile') ||
-    text.includes('tecnología') ||
-    text.includes('redes sociales');
+  // ========== AGE CATEGORIES ==========
+  
+  const isYouthSpecific = 
+    text.includes('gaming') || text.includes('videojuego') || text.includes('gamer') ||
+    text.includes('esports') || text.includes('deporte extremo') || text.includes('parkour') ||
+    text.includes('skate') || text.includes('dron') || text.includes('vr') ||
+    text.includes('realidad virtual') || text.includes('redes sociales') ||
+    text.includes('influencer') || text.includes('tiktok') || text.includes('trending');
 
-  const isAdultActivity =
-    text.includes('profesional') ||
-    text.includes('carrera') ||
-    text.includes('negocio') ||
-    text.includes('vino') ||
-    text.includes('cocina gourmet') ||
-    text.includes('golf');
+  const isAdultSpecific =
+    text.includes('profesional') || text.includes('ejecutivo') || text.includes('liderazgo') ||
+    text.includes('dirección') || text.includes('carrera ejecutiva') || text.includes('familia') ||
+    text.includes('padre') || text.includes('madre') || text.includes('responsabilidad') ||
+    text.includes('balance') || text.includes('work-life') || text.includes('vino') ||
+    text.includes('golf') || text.includes('gourmet');
 
-  const isSeniorActivity =
-    text.includes('senior') ||
-    text.includes('mayor') ||
-    text.includes('tercera edad') ||
-    text.includes('retiro') ||
-    text.includes('relajación');
+  const isSeniorSpecific =
+    text.includes('senior') || text.includes('mayor') || text.includes('tercera edad') ||
+    text.includes('jubilado') || text.includes('retiro') || text.includes('50+') ||
+    text.includes('abuelo') || text.includes('sabiduria') || text.includes('experiencia') ||
+    text.includes('bajo impacto');
 
-  // Assign age categories
-  if (isYouthActivity || (!isAdultActivity && !isSeniorActivity)) {
-    tags.push('joven'); // 18-30
-  }
-  if (!isSeniorActivity) {
-    tags.push('adulto'); // 30-50
-  }
-  if (isSeniorActivity || text.includes('todas las edades')) {
-    tags.push('mayor'); // 50+
+  if (isYouthSpecific) tags.push('joven');
+  if (isAdultSpecific || (!isYouthSpecific && !isSeniorSpecific)) tags.push('adulto');
+  if (isSeniorSpecific || text.includes('todas edades') || text.includes('cualquier edad')) tags.push('mayor');
+  if (tags.filter(t => ['joven', 'adulto', 'mayor'].includes(t)).length === 0) {
+    tags.push('joven', 'adulto');
   }
 
-  // HOBBY/ACTIVITY TAGS
-  if (text.includes('tech') || text.includes('tecnología') || text.includes('programación') || text.includes('computador')) {
-    tags.push('tech');
-  }
-  if (text.includes('música') || text.includes('concierto') || text.includes('canto')) {
-    tags.push('musica');
-  }
-  if (text.includes('deporte') || text.includes('ejercicio') || text.includes('gym') || text.includes('fitness') || text.includes('fútbol') || text.includes('basketball')) {
-    tags.push('deportes');
-  }
-  if (text.includes('arte') || text.includes('pintura') || text.includes('dibujo') || text.includes('manualidad')) {
-    tags.push('arte');
-  }
-  if (text.includes('lectura') || text.includes('libro') || text.includes('leer')) {
-    tags.push('lectura');
-  }
-  if (text.includes('cocina') || text.includes('culinaria') || text.includes('gastronom')) {
-    tags.push('cocina');
-  }
-  if (text.includes('viaje') || text.includes('turismo') || text.includes('excursión')) {
-    tags.push('viajes');
-  }
-  if (text.includes('naturaleza') || text.includes('aire libre') || text.includes('outdoor') || text.includes('camping')) {
-    tags.push('naturaleza');
-  }
-  if (text.includes('manualidad') || text.includes('craft') || text.includes('diy')) {
-    tags.push('manualidades');
-  }
-  if (text.includes('social') || text.includes('grupo') || text.includes('amigos') || text.includes('team')) {
-    tags.push('social');
-  }
+  // ========== HOBBY TAGS ==========
+  
+  if (text.match(/tech|tecnología|programación|código|computador|software|digital|coding|desarrollo|app/)) tags.push('tech');
+  if (text.match(/música|musical|concierto|canto|canta|voz|instrumento|banda|jazz|clásico|rock|pop/)) tags.push('musica');
+  if (text.match(/deporte|deportivo|ejercicio|gym|fitness|entrenamiento|fútbol|basketball|tenis|voleibol|natación|atletismo|ciclismo|running/)) tags.push('deportes');
+  if (text.match(/arte|pintura|dibujo|escultura|galería|artístico|creativo/)) tags.push('arte');
+  if (text.match(/lectura|libro|leer|literatura|novela|autor/)) tags.push('lectura');
+  if (text.match(/cocina|culinaria|gastronom|chef|receta|gourmet/)) tags.push('cocina');
+  if (text.match(/viaje|turismo|excursión|tour|destino|viajero/)) tags.push('viajes');
+  if (text.match(/naturaleza|aire libre|outdoor|camping|montaña|parque|sendero|verde/)) tags.push('naturaleza');
+  if (text.match(/manualidad|craft|diy|artesanía/)) tags.push('manualidades');
+  if (text.match(/social|grupo|amigos|team|evento|encuentro|reunión/)) tags.push('social');
 
-  // GOAL-RELATED TAGS
-  if (text.includes('familia') || text.includes('familiar')) {
-    tags.push('familia');
-  }
-  if (text.includes('amigo') || text.includes('social')) {
-    tags.push('amigos');
-  }
-  if (text.includes('carrera') || text.includes('profesional') || text.includes('trabajo')) {
-    tags.push('carrera');
-  }
-  if (text.includes('salud') || text.includes('bienestar') || text.includes('wellness')) {
-    tags.push('salud');
-  }
-  if (text.includes('crecimiento') || text.includes('desarrollo personal') || text.includes('autoayuda')) {
-    tags.push('crecimiento_personal');
-  }
+  // ========== GOAL TAGS ==========
+  
+  if (text.match(/familia|familiar|padre|madre|hijo/)) tags.push('familia');
+  if (text.match(/amigo|amigos|amistad|conexión|comunidad/)) tags.push('amigos');
+  if (text.match(/carrera|profesional|trabajo|empleo|laboral|empresario/)) tags.push('carrera');
+  if (text.match(/salud|bienestar|wellness|fitness|medicina|nutrición/)) tags.push('salud');
+  if (text.match(/crecimiento personal|desarrollo personal|transformación|educación|mejora|superación/)) tags.push('crecimiento_personal');
+  if (text.match(/estabilidad|seguridad|paz|tranquilidad|equilibrio/)) tags.push('estabilidad');
+  if (text.match(/bienes|casa|propiedad|inmueble|vivienda/)) tags.push('bienes');
 
-  // ACTIVITY CHARACTERISTICS
-  if (text.includes('tranquil') || text.includes('relax') || text.includes('calm') || text.includes('paz')) {
-    tags.push('tranquilo');
-  }
-  if (text.includes('activ') || text.includes('dinámico') || text.includes('energía')) {
-    tags.push('activo');
-  }
-  if (text.includes('creativ') || text.includes('arte') || text.includes('expresión')) {
-    tags.push('creativo');
-  }
-
-  return Array.from(new Set(tags)); // Remove duplicates
+  return Array.from(new Set(tags));
 }
 
 // ============================================================================
@@ -228,16 +289,12 @@ async function updateAllProductTags() {
   console.log('🔧 Fixing tags in Compensar-Database...\n');
 
   try {
-    // 1. Fetch all products
     console.log('📥 Fetching all products...');
     const { data: products, error: fetchError } = await supabase
       .from('Compensar-Database')
       .select('*');
 
-    if (fetchError) {
-      throw fetchError;
-    }
-
+    if (fetchError) throw fetchError;
     if (!products || products.length === 0) {
       console.log('⚠️  No products found in database');
       return;
@@ -245,7 +302,6 @@ async function updateAllProductTags() {
 
     console.log(`✅ Found ${products.length} products\n`);
 
-    // 2. Update each product
     let updated = 0;
     let failed = 0;
 
@@ -258,7 +314,6 @@ async function updateAllProductTags() {
         console.log(`   Situation Tags: ${situationTags.join(', ')}`);
         console.log(`   Profile Tags: ${profileTags.join(', ')}`);
 
-        // Update the product
         const { error: updateError } = await supabase
           .from('Compensar-Database')
           .update({
@@ -295,17 +350,17 @@ async function updateAllProductTags() {
 }
 
 // ============================================================================
-// PREVIEW FUNCTION (Don't update, just show what would change)
+// PREVIEW FUNCTION
 // ============================================================================
 
 async function previewTagChanges() {
-  console.log('👀 Previewing tag changes (no updates will be made)...\n');
+  console.log('👀 Previewing tag changes for first 10 products...\n');
 
   try {
     const { data: products, error } = await supabase
       .from('Compensar-Database')
       .select('*')
-      .limit(10); // Preview first 10 products
+      .limit(10);
 
     if (error) throw error;
     if (!products || products.length === 0) {
@@ -319,9 +374,7 @@ async function previewTagChanges() {
 
       console.log(`📦 ${product.nombre}`);
       console.log(`   Category: ${product.categoria_principal} > ${product.subcategoria}`);
-      console.log(`   Current situation_tags: ${product.situation_tags || 'none'}`);
       console.log(`   NEW situation_tags: ${situationTags.join(', ')}`);
-      console.log(`   Current profile_tags: ${product.profile_tags || 'none'}`);
       console.log(`   NEW profile_tags: ${profileTags.join(', ')}`);
       console.log('');
     }
@@ -346,11 +399,19 @@ if (args.includes('--preview')) {
 🔧 Compensar Database Tag Fixer
 
 Usage:
-  npm run fix-tags:preview   # Preview changes without updating
-  npm run fix-tags:update    # Update all products
+  npx ts-node Typescript-Integration/fix-tags.ts --preview   # Preview first 10 products
+  npx ts-node Typescript-Integration/fix-tags.ts --update    # Update ALL products
 
-Or:
-  npx ts-node Typescript-Integration/fix-tags.ts --preview
-  npx ts-node Typescript-Integration/fix-tags.ts --update
+Tags assigned:
+  SITUATION_TAGS (which 4 situations help with):
+    - muerte_familiar (calming, healing, terapeutic)
+    - causa_economica (educational, career, affordable)
+    - bloqueo_incapacidad (learning, mentoring, confidence)
+    - rompimiento_pareja (social, active, fun, distracting)
+
+  PROFILE_TAGS (age, hobbies, goals):
+    - Age: joven (18-30) | adulto (30-50) | mayor (50+)
+    - Hobbies: tech, musica, deportes, arte, lectura, cocina, viajes, naturaleza, manualidades, social
+    - Goals: familia, amigos, carrera, salud, crecimiento_personal, estabilidad, bienes
   `);
 }
