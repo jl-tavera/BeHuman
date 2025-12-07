@@ -44,6 +44,7 @@ export default async function ChatPage() {
     <ChatInterface
       agentId={agent.elevenlabs_agent_id}
       userId={user.id}
+      agentName={agent.agent_name}
     />
   )
 }

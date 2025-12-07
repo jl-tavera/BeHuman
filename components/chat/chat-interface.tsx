@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { Menu, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
+import { Mic, MicOff, Phone, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
 import { Sidebar } from "@/components/sidebar";
@@ -21,7 +21,6 @@ export function ChatInterface({
   agentName = "Tu Compañero",
 }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -116,22 +115,14 @@ export function ChatInterface({
   return (
     <>
       {/* Sidebar */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar />
 
       {/* Main Content */}
-      <div className="h-screen bg-background flex flex-col lg:ml-64 overflow-hidden">
+      <div className="h-screen bg-background flex flex-col ml-64 overflow-hidden">
         {/* Header */}
         <header className="flex-shrink-0 pt-6 pb-3 px-6">
           <div className="max-w-lg mx-auto">
-            <div className="relative flex items-center justify-center mb-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSidebarOpen(true)}
-                className="absolute left-0 text-muted-foreground lg:hidden"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
+            <div className="flex items-center justify-center mb-3">
               <h1 className="text-xl font-bold text-foreground">
                 {agentName}
               </h1>
