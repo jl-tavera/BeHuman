@@ -2,11 +2,12 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { Mic, MicOff, Phone, PhoneOff } from "lucide-react";
+import { Mic, MicOff, Phone, PhoneOff, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
 import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInterfaceProps {
   agentId: string;
@@ -21,6 +22,8 @@ export function ChatInterface({
   agentName = "Tu Compañero",
 }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const conversation = useConversation({
     onConnect: () => {
@@ -115,14 +118,36 @@ export function ChatInterface({
   return (
     <>
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Main Content */}
-      <div className="h-screen bg-background flex flex-col ml-64 overflow-hidden">
+      <div className={cn(
+        "h-screen bg-background flex flex-col overflow-hidden transition-all",
+        !isMobile && "ml-64"
+      )}>
         {/* Header */}
         <header className="flex-shrink-0 pt-6 pb-3 px-6">
           <div className="max-w-lg mx-auto">
-            <div className="flex items-center justify-center mb-3">
+            <div className="flex items-center justify-center mb-3 relative">
+              {/* Hamburger menu button - only on mobile */}
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-0"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
               <h1 className="text-xl font-bold text-foreground">
                 {agentName}
               </h1>

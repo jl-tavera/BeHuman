@@ -7,22 +7,34 @@ import BehumanLogo from "@/components/BehumanLogo";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarProps {
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ className = "" }: SidebarProps) {
+export function Sidebar({ className = "", isOpen = false, onClose }: SidebarProps) {
+  const isMobile = useIsMobile();
   const { signOut } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
     router.push("/login");
+    // Close sidebar on mobile after logout
+    if (isMobile && onClose) {
+      onClose();
+    }
   };
 
   const handleNavClick = (href: string) => {
     router.push(href);
+    // Close sidebar on mobile after navigation
+    if (isMobile && onClose) {
+      onClose();
+    }
   };
 
   const menuItems = [
@@ -52,7 +64,9 @@ export function Sidebar({ className = "" }: SidebarProps) {
     <aside
       className={cn(
         "flex h-screen w-64 flex-col border-r bg-[hsl(var(--sidebar-background))]",
-        "fixed left-0 top-0 z-50",
+        "fixed left-0 top-0 z-50 transition-transform duration-300",
+        // On mobile: slide in/out based on isOpen state
+        isMobile && !isOpen && "-translate-x-full",
         className
       )}
       style={{ borderColor: "hsl(var(--sidebar-border))" }}
