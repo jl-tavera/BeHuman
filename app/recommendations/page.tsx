@@ -86,7 +86,6 @@ export default function RecommendationsPage() {
               )}
 
               <div className="flex items-center gap-3">
-                <BehumanLogo size={36} />
                 <h1 className="text-xl font-bold">Recomendaciones</h1>
               </div>
             </div>
