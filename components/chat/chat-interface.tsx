@@ -19,6 +19,7 @@ type CallState = "idle" | "connecting" | "connected";
 
 export function ChatInterface({
   agentId,
+  userId,
   agentName = "Tu Compañero",
 }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
@@ -49,11 +50,14 @@ export function ChatInterface({
       await conversation.startSession({
         agentId,
         connectionType: "webrtc",
+        dynamicVariables: {
+          user_id: userId,
+        },
       });
     } catch (error) {
       console.error("Failed to start conversation:", error);
     }
-  }, [agentId, conversation]);
+  }, [agentId, userId, conversation]);
 
   const stopConversation = useCallback(async () => {
     await conversation.endSession();
