@@ -27,6 +27,16 @@ export interface DashboardMetrics {
   criticalAlerts: number;
 }
 
+export interface ScoreDistribution {
+  score: number;
+  count: number;
+}
+
+export interface DistributionData {
+  general: ScoreDistribution[];
+  [area: string]: ScoreDistribution[];
+}
+
 /**
  * Fetch aggregated company mood data from the database view
  */
@@ -185,6 +195,56 @@ export async function getTrendData(): Promise<{
 }
 
 /**
+ * Fetch score distribution data for stress, emotion, and anxiety
+ */
+export async function getScoreDistribution(): Promise<{
+  stress: DistributionData;
+  emotion: DistributionData;
+  anxiety: DistributionData;
+}> {
+  const supabase = await getSupabaseServerClient();
+
+  // Get all psychometric answers with user profiles
+  const { data: answers, error: answersError } = await supabase
+    .from("psychometric_answers")
+    .select(`
+      answer,
+      question_id,
+      psychometric_questions!inner(block_category),
+      user_id
+    `);
+
+  if (answersError) {
+    console.error("Error fetching answers for distribution:", answersError);
+    return {
+      stress: { general: [] },
+      emotion: { general: [] },
+      anxiety: { general: [] },
+    };
+  }
+
+  // Get user profiles with company areas
+  const { data: profiles } = await supabase
+    .from("onboarding_profiles")
+    .select("user_id, company_area");
+
+  const userAreaMap = new Map(
+    profiles?.map((p) => [p.user_id, p.company_area]) || []
+  );
+
+  // Process distributions
+  const stressDistribution = processDistribution(answers || [], userAreaMap, "ESTRES");
+  const emotionDistribution = processDistribution(answers || [], userAreaMap, "BIENESTAR");
+  const anxietyDistribution = processDistribution(answers || [], userAreaMap, "ANSIEDAD");
+
+  return {
+    stress: stressDistribution,
+    emotion: emotionDistribution,
+    anxiety: anxietyDistribution,
+  };
+}
+
+/**
  * Fetch general dashboard metrics
  */
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
@@ -293,6 +353,63 @@ function processAreaTrends(
     result[area] = Array.from(quarters.entries()).map(([quarter, scores]) => ({
       month: quarter,
       value: normalizeScore(average(scores)),
+    }));
+  });
+
+  return result;
+}
+
+function processDistribution(
+  answers: any[],
+  userAreaMap: Map<string, string>,
+  category: string
+): DistributionData {
+  // Initialize score buckets (1-5)
+  const initScoreBuckets = (): Map<number, number> => {
+    const buckets = new Map<number, number>();
+    for (let i = 1; i <= 5; i++) {
+      buckets.set(i, 0);
+    }
+    return buckets;
+  };
+
+  // General distribution
+  const generalScores = initScoreBuckets();
+
+  // Area-specific distributions
+  const areaScores: Record<string, Map<number, number>> = {};
+
+  answers.forEach((answer: any) => {
+    if (answer.psychometric_questions?.block_category !== category) return;
+
+    const score = Math.round(answer.answer); // Round to nearest integer (1-5)
+
+    // Update general distribution
+    generalScores.set(score, (generalScores.get(score) || 0) + 1);
+
+    // Update area-specific distribution
+    const area = userAreaMap.get(answer.user_id);
+    if (area) {
+      if (!areaScores[area]) {
+        areaScores[area] = initScoreBuckets();
+      }
+      areaScores[area].set(score, (areaScores[area].get(score) || 0) + 1);
+    }
+  });
+
+  // Convert to distribution data format
+  const result: DistributionData = {
+    general: Array.from(generalScores.entries()).map(([score, count]) => ({
+      score,
+      count,
+    })),
+  };
+
+  // Add area-specific distributions
+  Object.entries(areaScores).forEach(([area, scores]) => {
+    result[area] = Array.from(scores.entries()).map(([score, count]) => ({
+      score,
+      count,
     }));
   });
 
