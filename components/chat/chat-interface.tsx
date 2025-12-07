@@ -2,10 +2,11 @@
 
 import { useCallback, useState } from "react";
 import { useConversation } from "@elevenlabs/react";
-import { ArrowLeft, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
+import { Menu, Mic, MicOff, Phone, PhoneOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AudioWave } from "./audio-wave";
+import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
 
 interface ChatInterfaceProps {
@@ -22,6 +23,7 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const router = useRouter();
   const [isMuted, setIsMuted] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const conversation = useConversation({
     onConnect: () => {
@@ -114,22 +116,27 @@ export function ChatInterface({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex-shrink-0 pt-8 pb-4 px-6">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push("/")}
-            className="text-muted-foreground"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          {getStatusIndicator()}
-          <div className="w-10" /> {/* Spacer for centering */}
-        </div>
-      </header>
+    <>
+      {/* Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+      {/* Main Content */}
+      <div className="min-h-screen bg-background flex flex-col lg:ml-64">
+        {/* Header */}
+        <header className="flex-shrink-0 pt-8 pb-4 px-6">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSidebarOpen(true)}
+              className="text-muted-foreground"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            {getStatusIndicator()}
+            <div className="w-10" /> {/* Spacer for centering */}
+          </div>
+        </header>
 
       {/* Main content - AudioWave visualization */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 pb-8">
@@ -202,6 +209,7 @@ export function ChatInterface({
           </Button>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
