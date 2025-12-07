@@ -341,7 +341,7 @@ export default function OnboardingPage() {
   }
 
   if (phase === "complete") {
-    return <OnboardingComplete humanName={humanName} />;
+    return <OnboardingComplete humanName={humanName} userId={user?.id || ""} />;
   }
 
   return (
