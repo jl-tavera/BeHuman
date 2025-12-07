@@ -458,8 +458,8 @@ export function generateEmpathicMessage(
 // FUNCIÓN PRINCIPAL DE RECOMENDACIÓN
 // ============================================================================
 
-import { fetchProductsBySituation, fetchProducts } from './supabaseClient';
-import type { RecommendationResult, ScoredProduct } from './types';
+import { fetchProductsBySituation, fetchProducts, createWellnessRequest } from './supabaseClient';
+import type { RecommendationResult, ScoredProduct, CreateWellnessRequestInput } from './types';
 
 /**
  * Función principal que orquesta todo el flujo de recomendación.
@@ -468,13 +468,17 @@ import type { RecommendationResult, ScoredProduct } from './types';
  * @param situation - Situación clasificada
  * @param transcript - Transcript original (para contexto)
  * @param topN - Número de recomendaciones a retornar
+ * @param anonymousToken - Token anónimo del empleado (opcional, para guardar en DB)
+ * @param saveToDatabase - Si se debe guardar la solicitud en la base de datos
  * @returns Resultado completo con recomendaciones y mensaje empático
  */
 export async function getRecommendations(
   profile: Profile,
   situation: Situation,
   transcript: string,
-  topN: number = 4
+  topN: number = 4,
+  anonymousToken?: string,
+  saveToDatabase: boolean = false
 ): Promise<RecommendationResult> {
   // 1. Obtener productos relevantes de Supabase
   let products: Product[];
@@ -505,7 +509,32 @@ export async function getRecommendations(
   const topProduct = recommendations.length > 0 ? recommendations[0].product : null;
   const empathicMessage = generateEmpathicMessage(profile, situation, topProduct);
   
-  // 4. Construir resultado
+  // 4. Guardar en base de datos si se solicita y hay token
+  if (saveToDatabase && anonymousToken && recommendations.length > 0) {
+    try {
+      // Crear extracto del transcript (primeros 500 caracteres)
+      const transcriptExcerpt = transcript.length > 500 
+        ? transcript.substring(0, 497) + '...' 
+        : transcript;
+      
+      const requestInput: CreateWellnessRequestInput = {
+        anonymousToken,
+        situation,
+        profile,
+        topRecommendation: recommendations[0],
+        empathicMessage,
+        transcriptExcerpt
+      };
+      
+      await createWellnessRequest(requestInput);
+      console.log('✅ Wellness request saved to database');
+    } catch (error) {
+      console.error('❌ Error saving wellness request to database:', error);
+      // Don't throw - continue with recommendation result
+    }
+  }
+  
+  // 5. Construir resultado
   return {
     situation,
     recommendations,

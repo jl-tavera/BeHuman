@@ -295,6 +295,99 @@ export function normalizeProduct(raw: SupabaseProduct): Product {
 }
 
 // ============================================================================
+// WELLNESS REQUEST SYSTEM (for database)
+// ============================================================================
+
+/**
+ * Wellness request stored in database
+ * Represents an employee's wellness recommendation awaiting HR approval
+ */
+export interface WellnessRequest {
+  id: string;
+  
+  // Anonymous employee identifier
+  anonymous_token: string;
+  
+  // Situation classification
+  situation_type: string;
+  situation_subtype?: string;
+  situation_context?: string;
+  situation_confidence?: number;
+  
+  // User profile snapshot
+  profile_snapshot: Profile;
+  
+  // Chat transcript excerpt
+  transcript_excerpt?: string;
+  
+  // Recommended product
+  recommended_product_id: string;
+  recommended_product_name: string;
+  recommended_product_price: number;
+  recommended_product_category?: string;
+  recommended_product_subcategory?: string;
+  
+  // Full product snapshot
+  product_snapshot: Product;
+  
+  // Recommendation reasoning
+  recommendation_score: number;
+  recommendation_reasons: string[];
+  
+  // Empathic message
+  empathic_message?: string;
+  
+  // Estimated productivity impact
+  estimated_productivity_uplift_percent?: number;
+  
+  // Request status
+  status: 'pending' | 'approved' | 'rejected';
+  
+  // HR decision
+  reviewed_at?: string;
+  reviewed_by?: string;
+  rejection_reason?: string;
+  
+  // Budget tracking
+  budget_allocated?: number;
+  
+  // Metadata
+  created_at: string;
+  updated_at?: string;
+}
+
+/**
+ * Admin budget tracking
+ */
+export interface AdminBudget {
+  id: string;
+  period_start: string;
+  period_end: string;
+  total_budget: number;
+  allocated_budget: number;
+  spent_budget: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+/**
+ * Employee notification after approval
+ */
+export interface EmployeeNotification {
+  id: string;
+  wellness_request_id: string;
+  anonymous_token: string;
+  title: string;
+  message: string;
+  intervention_details: Product;
+  delivered: boolean;
+  read: boolean;
+  read_at?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// ============================================================================
 // API TYPES (for Next.js API routes)
 // ============================================================================
 
@@ -304,15 +397,38 @@ export function normalizeProduct(raw: SupabaseProduct): Product {
 export interface RecommendationRequest {
   transcript: string;
   profile: Profile;
+  anonymousToken?: string;
+}
+
+/**
+ * Request body for creating wellness request
+ */
+export interface CreateWellnessRequestInput {
+  anonymousToken: string;
+  situation: Situation;
+  profile: Profile;
+  topRecommendation: ScoredProduct;
+  empathicMessage: string;
+  transcriptExcerpt?: string;
 }
 
 /**
  * Request body for HR accept/reject API
  */
 export interface HRDecisionRequest {
-  cardId: string;
-  decision: 'accept' | 'reject';
+  requestId: string;
+  decision: 'approve' | 'reject';
   reason?: string;
+  adminUserId: string;
+}
+
+/**
+ * Request body for updating budget
+ */
+export interface UpdateBudgetRequest {
+  periodStart: string;
+  periodEnd: string;
+  totalBudget: number;
 }
 
 /**
