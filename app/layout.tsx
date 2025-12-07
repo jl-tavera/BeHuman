@@ -10,6 +10,12 @@ export const metadata: Metadata = {
   title: "behuman",
   description: "Personal AI companion for meaningful interactions",
   authors: [{ name: "behuman" }],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

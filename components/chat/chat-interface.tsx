@@ -28,7 +28,47 @@ export function ChatInterface({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWellnessRecommendation, setShowWellnessRecommendation] = useState(false);
   const isMobile = useIsMobile();
-  const { getRecommendation } = useRecommendation();
+  
+  // Demo function to trigger wellness recommendation
+  const triggerWellnessDemo = useCallback(async () => {
+    const demoTranscript = "Estoy muy mal, rompí con mi novia hace una semana y no puedo concentrarme en el trabajo. Me siento perdido y no sé qué hacer. La extraño mucho.";
+    
+    try {
+      const response = await fetch('/api/analyze-transcript', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcript: demoTranscript,
+          profile: {
+            age: 28,
+            hobbies: ['deportes', 'musica', 'tech'],
+            goals: ['crecimiento_personal', 'salud', 'amigos'],
+            preferences: {
+              budget_range: 'medium',
+              location_preference: 'bogota'
+            }
+          },
+          sessionId: `demo_${Date.now()}`
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setShowWellnessRecommendation(true);
+        console.log('Demo analysis:', data.analysis);
+        console.log('Demo recommendation:', data.recommendation);
+        
+        if (data.dashboardAlert?.created) {
+          console.log('Dashboard alert created:', data.dashboardAlert);
+        }
+      }
+    } catch (error) {
+      console.error('Demo trigger error:', error);
+    }
+  }, []);
 
   const conversation = useConversation({
     onConnect: () => {

@@ -35,6 +35,7 @@ import {
   type DashboardMetrics,
   type WellnessRecommendation,
 } from "./actions";
+import { CrisisAlertPanel } from "@/components/dashboard/CrisisAlertPanel";
 
 // Using WellnessRecommendation type from actions.ts
 
@@ -42,6 +43,25 @@ const priorityColors = {
   alta: "bg-red-100 text-red-700 border-red-200",
   media: "bg-amber-100 text-amber-700 border-amber-200",
   baja: "bg-emerald-100 text-emerald-700 border-emerald-200",
+};
+
+const severityColors = {
+  critical: "bg-red-600 text-white border-red-700",
+  severe: "bg-orange-500 text-white border-orange-600", 
+  moderate: "bg-yellow-500 text-white border-yellow-600",
+  mild: "bg-blue-500 text-white border-blue-600",
+  urgent_review: "bg-red-600 text-white border-red-700 animate-pulse"
+};
+
+const getSeverityEmoji = (severity: string) => {
+  switch (severity) {
+    case 'critical': return '🚨';
+    case 'severe': return '⚠️';
+    case 'moderate': return '📋';
+    case 'mild': return '💡';
+    case 'urgent_review': return '🔴';
+    default: return '📝';
+  }
 };
 
 const Dashboard = () => {
@@ -156,6 +176,11 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Crisis Alert Panel - High Priority */}
+      <div className="mb-6">
+        <CrisisAlertPanel onAlertClick={(alert) => console.log('Crisis alert clicked:', alert)} />
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <KpiCard
@@ -244,22 +269,55 @@ const Dashboard = () => {
                         className="cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => handleRowClick(rec)}
                       >
-                        <TableCell className="font-medium">{rec.recommended_product_name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="capitalize">
-                            {rec.situation_type.replace('_', ' ')}
-                          </Badge>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {/* Crisis Alert Indicator */}
+                            {(rec.status === 'urgent_review' || rec.situation_subtype === 'crisis_alert') && (
+                              <span className="text-lg" title="Crisis Alert">
+                                {getSeverityEmoji('critical')}
+                              </span>
+                            )}
+                            {rec.recommended_product_name}
+                          </div>
                         </TableCell>
-                        <TableCell>${rec.recommended_product_price.toLocaleString()}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={
-                            rec.situation_confidence > 0.8 ? "bg-red-100 text-red-700 border-red-200" :
-                            rec.situation_confidence > 0.5 ? "bg-amber-100 text-amber-700 border-amber-200" :
-                            "bg-emerald-100 text-emerald-700 border-emerald-200"
-                          }>
-                            {rec.situation_confidence > 0.8 ? 'Alta' : 
-                             rec.situation_confidence > 0.5 ? 'Media' : 'Baja'}
-                          </Badge>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="outline" className="capitalize">
+                              {rec.situation_type.replace('_', ' ')}
+                            </Badge>
+                            {/* Show alert priority for crisis cases */}
+                            {rec.situation_subtype === 'crisis_alert' && (
+                              <Badge className={severityColors.critical} style={{ fontSize: '10px' }}>
+                                ALERT: {rec.product_snapshot?.alert_priority || 'HIGH'} PRIORITY
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span>${rec.recommended_product_price.toLocaleString()}</span>
+                            {rec.status === 'urgent_review' && (
+                              <span className="text-xs text-red-600 font-medium">Urgent Review</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="outline" className={
+                              rec.situation_confidence > 0.8 ? "bg-red-100 text-red-700 border-red-200" :
+                              rec.situation_confidence > 0.5 ? "bg-amber-100 text-amber-700 border-amber-200" :
+                              "bg-emerald-100 text-emerald-700 border-emerald-200"
+                            }>
+                              {rec.situation_confidence > 0.8 ? 'Alta' : 
+                               rec.situation_confidence > 0.5 ? 'Media' : 'Baja'}
+                            </Badge>
+                            {/* Show emotional risk factors */}
+                            {rec.product_snapshot?.risk_factors && rec.product_snapshot.risk_factors.length > 0 && (
+                              <div className="text-xs text-muted-foreground">
+                                Risk: {rec.product_snapshot.risk_factors.slice(0, 2).join(', ')}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
